@@ -1,0 +1,43 @@
+
+Lista de Prioridades
+
+Prioridade Alta
+ 
+Estas funcionalidades são obrigatórias para o sistema funcionar. Sem elas, a plataforma não cumpre o seu objetivo principal:
+
+Autenticação e Gestão de Usuários(Cadastro de usuários, Login e logout, Controle de sessões, Diferenciação de perfis e Segurança básica);
+
+Gestão de Clientes(Registro de clientes, Atualização de dados pessoais e Consulta de informações do cliente);
+
+Realização de Pedido(Visualizar cardápio/serviços, Criar pedido, Associar pedido ao cliente e Registrar data e estado do pedido);
+
+Gestão de Pagamentos(Associar pagamento ao pedido, Registrar método de pagamento, Confirmar pagamento e Atualizar estado do pedido após pagamento);
+
+Base de Dados (Modelagem lógica correta, Integridade referencial (FOREIGN KEYS) e Normalização básica).
+
+Prioridade Média (Funcionalidades operacionais)
+
+
+Gestão de Pedidos(Funcionário/Admin): Visualizar pedidos, Gerir usuários, Monitorar pagamentos, Estatísticas básicas;
+
+Painel Administrativo: (Visualizar pedidos, Gerir usuários, Monitorar pagamentos, Estatísticas básicas;)
+
+Gestão do Card: (Adicionar itens, Editar itens, Remover itens, Definir preços;)
+
+Histórico de Pedidos: (Cliente visualiza pedidos anteriores, Consulta por data.)
+
+Prioridade Baixa
+Funcionalidades que agregam valor, mas não são críticas na primeira versão.
+
+Notificações(Aviso de mudança de estado do pedido e Alertas ao administrador);
+
+Interface Avançada (UX/UI): Animações com JavaScript e Design responsivo avançado (Bootstrap);
+
+Relatórios: (Relatório financeiro, Pedidos por período e Clientes mais ativos).
+
+Segurança Avançada
+
+Proteção contra SQL Injection (Prepared Statements);
+Validação avançada
+Logs de acesso
+
