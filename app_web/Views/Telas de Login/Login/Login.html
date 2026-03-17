@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KiLombo — Entrar</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    /* === VARIÁVEIS — mesmo sistema dos dashboards === */
+    :root{
+      --azul:#1a3c6e;--azul-medio:#2455a0;--azul-vivo:#2d6be4;
+      --azul-claro:#e8f0fb;--azul-bg:#f0f5ff;--texto:#111827;
+      --muted:#6b7280;--borda:#e2e8f0;--fundo:#f8fafc;
+      --branco:#ffffff;--erro:#dc2626;--sucesso:#16a34a;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'DM Sans',sans-serif;background:var(--fundo);color:var(--texto);min-height:100vh}
+
+    /* === LAYOUT SPLIT-SCREEN === */
+    .auth-wrap{min-height:100vh;display:flex}
+
+    /* Painel esquerdo — identidade visual */
+    .side-brand{
+      width:42%;background:var(--azul);padding:52px 48px;
+      display:flex;flex-direction:column;justify-content:space-between;
+      position:relative;overflow:hidden;
+    }
+    .side-brand::before{
+      content:'';position:absolute;inset:0;
+      background-image:radial-gradient(circle,rgba(255,255,255,.07) 1px,transparent 1px);
+      background-size:28px 28px;pointer-events:none;
+    }
+    .brand-glow{
+      position:absolute;width:420px;height:420px;border-radius:50%;
+      background:radial-gradient(circle,rgba(45,107,228,.5) 0%,transparent 70%);
+      bottom:-120px;right:-100px;pointer-events:none;
+    }
+    .brand-inner{position:relative;z-index:1}
+    .brand-logo{font-family:'DM Serif Display',serif;font-size:1.8rem;color:#fff;text-decoration:none;display:inline-block;margin-bottom:52px}
+    .brand-logo span{color:#93c5fd}
+    .brand-title{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,2.8vw,2.5rem);line-height:1.2;color:#fff;margin-bottom:14px;letter-spacing:-.5px}
+    .brand-title em{font-style:italic;color:#93c5fd}
+    .brand-desc{font-size:.93rem;font-weight:300;color:rgba(255,255,255,.7);line-height:1.75;max-width:340px;margin-bottom:36px}
+    .brand-list{list-style:none;padding:0;margin:0}
+    .brand-list li{display:flex;align-items:center;gap:10px;font-size:.88rem;color:rgba(255,255,255,.75);margin-bottom:10px}
+    .brand-list li i{color:#93c5fd;flex-shrink:0}
+    .brand-footer{position:relative;z-index:1;font-size:.73rem;color:rgba(255,255,255,.3)}
+
+    /* Painel direito — formulário */
+    .side-form{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 32px;background:var(--branco);overflow-y:auto}
+    .form-inner{width:100%;max-width:420px}
+
+    /* Tipografia do form */
+    .form-eyebrow{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--azul-vivo);margin-bottom:6px}
+    .form-heading{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--texto);margin-bottom:6px;letter-spacing:-.4px}
+    .form-sub{font-size:.9rem;color:var(--muted);font-weight:300;margin-bottom:26px}
+
+    /* Bloco de credenciais de demo — TODO PHP: REMOVER em produção */
+    .demo-box{background:var(--azul-bg);border:1px solid var(--azul-claro);border-radius:12px;padding:14px 16px;margin-bottom:22px}
+    .demo-box-title{font-size:.71rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--azul-vivo);margin-bottom:10px}
+    .demo-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px dashed var(--borda);font-size:.78rem}
+    .demo-row:last-child{border-bottom:none}
+    .demo-perfil{font-weight:700;color:var(--azul);width:65px;flex-shrink:0}
+    .demo-email{color:var(--muted);flex:1;padding:0 8px}
+    .btn-usar{font-size:.68rem;font-weight:600;background:var(--azul-claro);color:var(--azul-vivo);border:none;border-radius:5px;padding:3px 9px;cursor:pointer;transition:background .2s,color .2s}
+    .btn-usar:hover{background:var(--azul-vivo);color:#fff}
+
+    /* Campos */
+    .field-group{margin-bottom:18px}
+    .field-label{font-size:.84rem;font-weight:600;color:var(--texto);display:block;margin-bottom:6px}
+    .field-wrap{position:relative}
+    .field-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.95rem;pointer-events:none;z-index:2}
+    .km-input{width:100%;padding:11px 14px 11px 40px;font-size:.9rem;font-family:'DM Sans',sans-serif;border:1.5px solid var(--borda);border-radius:10px;background:var(--branco);color:var(--texto);outline:none;transition:border-color .2s,box-shadow .2s}
+    .km-input:focus{border-color:var(--azul-vivo);box-shadow:0 0 0 3px rgba(45,107,228,.12)}
+    .km-input.invalido{border-color:var(--erro)}
+    .km-input.invalido:focus{box-shadow:0 0 0 3px rgba(220,38,38,.1)}
+    .km-input.valido{border-color:var(--sucesso)}
+    .km-input.com-olho{padding-right:42px}
+    .btn-olho{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:.95rem;padding:4px;transition:color .2s;z-index:2}
+    .btn-olho:hover{color:var(--azul-vivo)}
+    .msg-erro{font-size:.77rem;color:var(--erro);margin-top:4px;display:flex;align-items:center;gap:4px}
+
+    /* Botão principal */
+    .btn-auth{width:100%;padding:13px;font-size:.95rem;font-weight:600;font-family:'DM Sans',sans-serif;background:var(--azul-vivo);color:#fff;border:none;border-radius:10px;cursor:pointer;transition:background .2s,transform .15s,box-shadow .2s;box-shadow:0 4px 16px rgba(45,107,228,.3);margin-top:8px}
+    .btn-auth:hover{background:var(--azul-medio);transform:translateY(-1px);box-shadow:0 6px 22px rgba(45,107,228,.35)}
+    .btn-auth:disabled{background:var(--muted);cursor:not-allowed;transform:none;box-shadow:none}
+    .auth-link{color:var(--azul-vivo);font-size:.85rem;font-weight:600;text-decoration:none}
+    .auth-link:hover{text-decoration:underline;color:var(--azul)}
+    .form-footer{text-align:center;font-size:.85rem;color:var(--muted);margin-top:24px;padding-top:18px;border-top:1px solid var(--borda)}
+    .mobile-logo{display:none;text-align:center;margin-bottom:28px}
+
+    @media(max-width:768px){
+      .side-brand{display:none}
+      .side-form{padding:30px 20px}
+      .form-inner{max-width:100%}
+      .mobile-logo{display:block}
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-wrap">
+
+  <!-- Painel esquerdo — branding -->
+  <div class="side-brand">
+    <div class="brand-glow"></div>
+    <div class="brand-inner">
+      <a href="../../Layout/index (1).html" class="brand-logo">Ki<span>Lombo</span></a>
+      <h1 class="brand-title">Bem-vindo ao seu<br><em>painel de gestão</em></h1>
+      <p class="brand-desc">Sistema completo para pedidos, cardápio e pagamentos. Desenvolvido para restaurantes em Angola.</p>
+      <ul class="brand-list">
+        <li><i class="bi bi-check-circle-fill"></i> Pedidos em tempo real</li>
+        <li><i class="bi bi-check-circle-fill"></i> Cardápio digital</li>
+        <li><i class="bi bi-check-circle-fill"></i> Pagamentos via Multicaixa</li>
+        <li><i class="bi bi-check-circle-fill"></i> Relatórios de vendas</li>
+        <li><i class="bi bi-check-circle-fill"></i> Multi-perfis de acesso</li>
+      </ul>
+    </div>
+    <div class="brand-footer">&copy; <span id="ano"></span> KiLombo &middot; Luanda, Angola</div>
+  </div>
+
+  <!-- Painel direito — formulário de login -->
+  <div class="side-form">
+    <div class="form-inner">
+
+      <div class="mobile-logo">
+        <a href="../../Layout/index (1).html" style="font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--azul);text-decoration:none;">Ki<span style="color:var(--azul-vivo);">Lombo</span></a>
+      </div>
+
+      <p class="form-eyebrow">Acesso ao sistema</p>
+      <h2 class="form-heading">Entrar</h2>
+      <p class="form-sub">Introduza as suas credenciais para aceder ao painel.</p>
+
+      <!--
+        CREDENCIAIS DE DEMO — TODO PHP: REMOVER em produção.
+        No sistema real: AuthController::login() autentica contra a base de dados.
+        Tabela: Usuario(id, nome, email, telefone, senha_hash, perfil)
+        password_verify($senha, $usuario['senha_hash'])
+      -->
+      <div class="demo-box">
+        <div class="demo-box-title"><i class="bi bi-info-circle me-1"></i>Credenciais de demonstração</div>
+        <div class="demo-row">
+          <span class="demo-perfil">Admin</span>
+          <span class="demo-email">admin@kilombo.ao</span>
+          <button class="btn-usar" onclick="usarCredencial('admin@kilombo.ao','admin123')">Usar</button>
+        </div>
+        <div class="demo-row">
+          <span class="demo-perfil">Gerente</span>
+          <span class="demo-email">gerente@kilombo.ao</span>
+          <button class="btn-usar" onclick="usarCredencial('gerente@kilombo.ao','gerente123')">Usar</button>
+        </div>
+        <div class="demo-row">
+          <span class="demo-perfil">Cliente</span>
+          <span class="demo-email">cliente@kilombo.ao</span>
+          <button class="btn-usar" onclick="usarCredencial('cliente@kilombo.ao','cliente123')">Usar</button>
+        </div>
+      </div>
+
+      <div id="alerta-box" class="mb-3"></div>
+
+      <!--
+        FORMULÁRIO DE LOGIN
+        TODO PHP: <form action="/auth/login" method="POST">
+        AuthController::login():
+          1. $_POST['email'] + $_POST['senha']
+          2. SELECT * FROM Usuario WHERE email = ? (prepared statement)
+          3. password_verify($senha, $hash)
+          4. $_SESSION['user'] = $dadosUsuario
+          5. header('Location: /'.$perfil.'/dashboard')
+      -->
+      <form id="form-login" novalidate>
+
+        <!-- TODO PHP: name="email" — filter_var(FILTER_SANITIZE_EMAIL) -->
+        <div class="field-group">
+          <label class="field-label" for="f-email">E-mail</label>
+          <div class="field-wrap">
+            <i class="bi bi-envelope field-icon"></i>
+            <input type="email" id="f-email" class="km-input" placeholder="exemplo@email.ao" autocomplete="email"/>
+          </div>
+          <div class="msg-erro" id="erro-email" style="display:none;"><i class="bi bi-exclamation-circle"></i><span></span></div>
+        </div>
+
+        <!-- TODO PHP: name="senha" — password_verify() | NUNCA armazenar em texto plano -->
+        <div class="field-group">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <label class="field-label" for="f-senha" style="margin:0;">Senha</label>
+            <a href="#" class="auth-link" style="font-size:.78rem;">Esqueci a senha</a>
+          </div>
+          <div class="field-wrap">
+            <i class="bi bi-lock field-icon"></i>
+            <input type="password" id="f-senha" class="km-input com-olho" placeholder="A sua senha" autocomplete="current-password"/>
+            <button type="button" class="btn-olho" id="btn-olho" onclick="alternarSenha('f-senha','btn-olho')"><i class="bi bi-eye"></i></button>
+          </div>
+          <div class="msg-erro" id="erro-senha" style="display:none;"><i class="bi bi-exclamation-circle"></i><span></span></div>
+        </div>
+
+        <button type="submit" class="btn-auth" id="btn-entrar">
+          <i class="bi bi-box-arrow-in-right me-2"></i>Entrar
+        </button>
+      </form>
+
+      <div class="form-footer">
+        Ainda não tem conta? <a href="../Registro/Registrar.html" class="auth-link">Criar conta agora</a>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /auth-wrap -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  /* ============================================================
+     MOCK DATA — Utilizadores simulados
+     TODO PHP: SELECT * FROM Usuario WHERE email = ?
+  ============================================================ */
+  const USUARIOS_MOCK = [
+    {id:1,nome:'João Mateus',  email:'admin@kilombo.ao',  senha:'admin123',  perfil:'admin'},
+    {id:2,nome:'Rosa Ferreira',email:'gerente@kilombo.ao',senha:'gerente123',perfil:'gerente'},
+    {id:3,nome:'Ana Teixeira', email:'cliente@kilombo.ao',senha:'cliente123',perfil:'cliente'}
+  ];
+
+  /* Rotas por perfil — TODO PHP: header('Location: /perfil/dashboard') */
+  const ROTAS = {admin:'../../Users/admin-dashboard.html',gerente:'../../Users/gerente-dashboard.html',cliente:'../../Users/cliente-dashboard.html'};
+
+  document.getElementById('ano').textContent = new Date().getFullYear();
+
+  /* ============================================================
+     SESSÃO SIMULADA com localStorage
+     TODO PHP: session_start() + $_SESSION['user']
+     Sessão PHP é mais segura: dados no servidor,
+     expiração automática, não manipulável pelo cliente.
+  ============================================================ */
+  function salvarSessao(u){
+    localStorage.setItem('kilombo_sessao',JSON.stringify({
+      id:u.id,nome:u.nome,email:u.email,perfil:u.perfil,loginEm:new Date().toISOString()
+    }));
+  }
+
+  /* Redireciona se já houver sessão — TODO PHP: isset($_SESSION['user']) */
+  /* DESATIVADO: O utilizador deve escolher um utilizador manualmente */
+  // (function(){
+  //   const raw=localStorage.getItem('kilombo_sessao');
+  //   if(!raw)return;
+  //   const d=JSON.parse(raw);
+  //   if(ROTAS[d.perfil])window.location.href=ROTAS[d.perfil];
+  // })();
+
+  /* === UTILITÁRIOS UI === */
+  function mostrarErro(id,msg){
+    const e=document.getElementById('erro-'+id),i=document.getElementById('f-'+id);
+    if(e){e.querySelector('span').textContent=msg;e.style.display='flex';}
+    if(i){i.classList.add('invalido');i.classList.remove('valido');}
+  }
+  function limparErro(id){
+    const e=document.getElementById('erro-'+id),i=document.getElementById('f-'+id);
+    if(e)e.style.display='none';
+    if(i){i.classList.remove('invalido');i.classList.add('valido');}
+  }
+  function mostrarAlerta(tipo,msg){
+    const c=tipo==='sucesso'?'success':'danger';
+    const ic=tipo==='sucesso'?'bi-check-circle-fill':'bi-exclamation-triangle-fill';
+    document.getElementById('alerta-box').innerHTML=
+      `<div class="alert alert-${c} d-flex align-items-center gap-2 py-2 px-3" style="font-size:.87rem;border-radius:10px;border:none;"><i class="bi ${ic}"></i>${msg}</div>`;
+  }
+  function alternarSenha(iId,bId){
+    const inp=document.getElementById(iId),btn=document.getElementById(bId);
+    inp.type=inp.type==='password'?'text':'password';
+    btn.innerHTML=inp.type==='text'?'<i class="bi bi-eye-slash"></i>':'<i class="bi bi-eye"></i>';
+  }
+  function setCarregando(v){
+    const b=document.getElementById('btn-entrar');
+    b.disabled=v;
+    b.innerHTML=v?'<span class="spinner-border spinner-border-sm me-2"></span>A verificar...'
+                 :'<i class="bi bi-box-arrow-in-right me-2"></i>Entrar';
+  }
+  function usarCredencial(email,senha){
+    document.getElementById('f-email').value=email;
+    document.getElementById('f-senha').value=senha;
+    document.getElementById('alerta-box').innerHTML='';
+    ['email','senha'].forEach(id=>{
+      const e=document.getElementById('erro-'+id),i=document.getElementById('f-'+id);
+      if(e)e.style.display='none';
+      if(i)i.classList.remove('invalido','valido');
+    });
+  }
+
+  /* ============================================================
+     SUBMISSÃO DO FORMULÁRIO
+     TODO PHP: form envia POST /auth/login → AuthController::login()
+     Validação JS é apenas UX — servidor DEVE validar independentemente.
+  ============================================================ */
+  document.getElementById('form-login').addEventListener('submit',function(e){
+    e.preventDefault();
+    document.getElementById('alerta-box').innerHTML='';
+    ['email','senha'].forEach(limparErro);
+
+    const email=document.getElementById('f-email').value.trim();
+    const senha=document.getElementById('f-senha').value;
+    let ok=true;
+
+    if(!email){mostrarErro('email','O e-mail é obrigatório.');ok=false;}
+    else if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){mostrarErro('email','Formato de e-mail inválido.');ok=false;}
+
+    if(!senha){mostrarErro('senha','A senha é obrigatória.');ok=false;}
+    else if(senha.length<6){mostrarErro('senha','Mínimo 6 caracteres.');ok=false;}
+
+    if(!ok)return;
+    setCarregando(true);
+
+    /* Simula delay de rede — TODO PHP: substituir por submit real */
+    setTimeout(function(){
+      const locais=JSON.parse(localStorage.getItem('kilombo_cadastros')||'[]');
+      const usuario=[...USUARIOS_MOCK,...locais].find(u=>
+        u.email.toLowerCase()===email.toLowerCase()&&u.senha===senha
+      );
+      if(!usuario){setCarregando(false);mostrarAlerta('erro','E-mail ou senha incorretos.');return;}
+      salvarSessao(usuario); /* TODO PHP: $_SESSION['user'] = $usuario */
+      mostrarAlerta('sucesso','Login efectuado! A redireccionar...');
+      setTimeout(()=>window.location.href=ROTAS[usuario.perfil]||'index.html',900);
+    },500);
+  });
+</script>
+</body>
+</html>

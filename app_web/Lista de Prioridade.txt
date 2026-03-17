@@ -2,6 +2,9 @@
 Lista de Prioridades
 
 Prioridade Alta
+
+Layout inicial.(Terminado em )
+
  
 Estas funcionalidades são obrigatórias para o sistema funcionar. Sem elas, a plataforma não cumpre o seu objetivo principal:
 
@@ -40,4 +43,6 @@ Segurança Avançada
 Proteção contra SQL Injection (Prepared Statements);
 Validação avançada
 Logs de acesso
+
+127.0.0.1:3306
 

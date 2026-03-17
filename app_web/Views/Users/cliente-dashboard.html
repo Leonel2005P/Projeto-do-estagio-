@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KiLombo — Área do Cliente</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root{--azul:#1a3c6e;--azul-medio:#2455a0;--azul-vivo:#2d6be4;--azul-claro:#e8f0fb;--azul-bg:#f0f5ff;--texto:#111827;--texto-muted:#6b7280;--borda:#e2e8f0;--fundo:#f8fafc;--branco:#ffffff;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:var(--fundo);color:var(--texto);}
+
+    /* NAVBAR SUPERIOR */
+    /* TODO PHP: mostrar nome do cliente autenticado — $_SESSION['cliente']['nome'] */
+    .navbar{background:var(--azul);padding:14px 0;position:sticky;top:0;z-index:200;}
+    .navbar-brand{font-family:'DM Serif Display',serif;font-size:1.4rem;color:#fff !important;}
+    .navbar-brand span{color:#93c5fd;}
+    .nav-link{font-size:.88rem;font-weight:500;color:rgba(255,255,255,0.75) !important;padding:6px 14px !important;border-radius:6px;transition:all .2s;cursor:pointer;}
+    .nav-link:hover,.nav-link.ativo{color:#fff !important;background:rgba(255,255,255,0.12);}
+    .navbar-toggler{border-color:rgba(255,255,255,.3);}
+    .navbar-toggler-icon{filter:brightness(0) invert(1);}
+    .nav-user{display:flex;align-items:center;gap:8px;font-size:.85rem;color:rgba(255,255,255,.8);}
+    .nav-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;font-size:.82rem;}
+
+    .body-pad{padding:28px 0;}
+    .pagina{display:none;}
+    .pagina.ativa{display:block;}
+
+    /* CARDS DE PRODUTO */
+    /* TODO PHP: SELECT * FROM Produto — /api/produtos/publico */
+    .prod-card{background:var(--branco);border:1px solid var(--borda);border-radius:14px;overflow:hidden;height:100%;transition:box-shadow .25s,transform .2s;}
+    .prod-card:hover{box-shadow:0 8px 28px rgba(26,60,110,.1);transform:translateY(-4px);}
+    .prod-head{height:110px;background:var(--azul-bg);display:flex;align-items:center;justify-content:center;position:relative;}
+    .prod-icon{font-size:2.2rem;color:var(--azul-vivo);opacity:.65;}
+    .prod-cat{position:absolute;top:10px;left:10px;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#fff;background:var(--azul-vivo);padding:3px 9px;border-radius:100px;}
+    .prod-cat.bebida{background:#0ea5e9;}
+    .prod-cat.entrada{background:#7c3aed;}
+    .prod-body{padding:16px;}
+    .prod-nome{font-weight:600;font-size:.95rem;color:var(--texto);margin-bottom:4px;}
+    .prod-desc{font-size:.8rem;color:var(--texto-muted);line-height:1.55;margin-bottom:14px;}
+    .prod-rodape{display:flex;align-items:center;justify-content:space-between;}
+    .prod-preco{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--azul);}
+    .btn-add{font-size:.8rem;font-weight:600;background:var(--azul-claro);color:var(--azul-vivo);border:none;border-radius:8px;padding:7px 14px;cursor:pointer;transition:background .2s,color .2s;display:flex;align-items:center;gap:5px;}
+    .btn-add:hover{background:var(--azul-vivo);color:#fff;}
+    .btn-add:disabled{opacity:.5;cursor:not-allowed;}
+
+    /* FILTROS CARDÁPIO */
+    .filtro-btn{font-size:.82rem;font-weight:500;padding:7px 18px;border-radius:100px;border:1.5px solid var(--borda);background:#fff;color:var(--texto-muted);cursor:pointer;transition:all .2s;}
+    .filtro-btn:hover,.filtro-btn.ativo{background:var(--azul-vivo);border-color:var(--azul-vivo);color:#fff;}
+
+    /* CARRINHO FLUTUANTE */
+    .carrinho-wrap{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:22px;position:sticky;top:80px;}
+    .carr-titulo{font-weight:700;font-size:.95rem;color:var(--azul);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+    .carr-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--borda);font-size:.85rem;}
+    .carr-item:last-of-type{border-bottom:none;}
+    .carr-item-nome{color:var(--texto);font-weight:500;flex:1;}
+    .carr-item-val{color:var(--azul);font-weight:600;font-size:.85rem;}
+    .carr-total-row{display:flex;justify-content:space-between;align-items:center;padding-top:14px;margin-top:4px;border-top:2px solid var(--borda);}
+    .carr-total-label{font-size:.82rem;font-weight:600;color:var(--texto-muted);}
+    .carr-total-val{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--azul);}
+    .btn-confirmar{width:100%;background:var(--azul-vivo);color:#fff;font-weight:600;font-size:.92rem;padding:11px;border:none;border-radius:9px;cursor:pointer;transition:background .2s;margin-top:14px;}
+    .btn-confirmar:hover{background:var(--azul-medio);}
+    .btn-confirmar:disabled{opacity:.5;cursor:not-allowed;}
+    .carr-vazio{font-size:.85rem;color:var(--texto-muted);text-align:center;padding:20px 0;}
+
+    /* MEUS PEDIDOS */
+    /* TODO PHP: SELECT ped.*, SUM(ip.preco_unitario*ip.quantidade) FROM Pedido ped
+                 JOIN ItemPedido ip ON ped.id_pedido=ip.id_pedido
+                 WHERE ped.id_cliente=$id_cliente */
+    .meu-ped{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:20px;margin-bottom:16px;transition:box-shadow .2s;}
+    .meu-ped:hover{box-shadow:0 4px 16px rgba(26,60,110,.08);}
+    .meu-ped-topo{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+    .meu-ped-id{font-weight:700;color:var(--azul);font-size:.9rem;}
+    .meu-ped-data{font-size:.78rem;color:var(--texto-muted);}
+    .meu-ped-itens{font-size:.83rem;color:var(--texto);line-height:1.65;margin-bottom:14px;}
+    .meu-ped-rodape{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+    .meu-ped-total{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--azul);}
+    .badge-st{font-size:.7rem;font-weight:700;padding:4px 10px;border-radius:100px;}
+    .st-pend{background:#fef9c3;color:#92400e;}
+    .st-prep{background:#dbeafe;color:#1e40af;}
+    .st-conc{background:#dcfce7;color:#15803d;}
+    .st-canc{background:#fee2e2;color:#991b1b;}
+
+    /* PAGAMENTO SIMULADO */
+    /* TODO PHP: POST /api/pagamentos/criar — Tabela Pagamento (id_pagamento, id_pedido, metodo, valor, status) */
+    .pag-card{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:24px;}
+    .pag-titulo{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--azul);margin-bottom:18px;}
+    .metodo-opcoes{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;}
+    .metodo-btn{font-size:.85rem;font-weight:500;padding:10px 18px;border-radius:10px;border:1.5px solid var(--borda);background:#fff;color:var(--texto-muted);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:8px;}
+    .metodo-btn:hover,.metodo-btn.ativo{border-color:var(--azul-vivo);color:var(--azul-vivo);background:var(--azul-claro);}
+    .form-label-c{font-size:.82rem;font-weight:600;color:var(--texto);display:block;margin-bottom:5px;}
+    .form-control-c{border:1.5px solid var(--borda);border-radius:8px;font-size:.88rem;padding:10px 13px;width:100%;font-family:'DM Sans',sans-serif;}
+    .form-control-c:focus{border-color:var(--azul-vivo);box-shadow:0 0 0 3px rgba(45,107,228,.1);outline:none;}
+
+    /* PERFIL */
+    .perfil-card{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:28px;}
+    .perfil-avatar{width:72px;height:72px;border-radius:50%;background:var(--azul-vivo);display:flex;align-items:center;justify-content:center;font-size:1.6rem;font-weight:700;color:#fff;margin-bottom:14px;}
+    .perfil-nome{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--azul);}
+    .perfil-email{font-size:.85rem;color:var(--texto-muted);}
+
+    /* SEÇÃO EYEBROW */
+    .s-eyebrow{font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--azul-vivo);margin-bottom:6px;}
+    .s-titulo{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--azul);margin-bottom:6px;}
+
+    @media(max-width:768px){.body-pad{padding:16px 0;}.carrinho-wrap{position:static;margin-top:24px;}}
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR SUPERIOR DO CLIENTE -->
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="#">Ki<span>Lombo</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navCli">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navCli">
+      <ul class="navbar-nav mx-auto gap-1">
+        <li class="nav-item"><a class="nav-link ativo" onclick="ir('cardapio')">Cardápio</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="ir('meus-pedidos')">Meus Pedidos</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="ir('pagamento')">Pagamento</a></li>
+        <li class="nav-item"><a class="nav-link" onclick="ir('perfil')">Perfil</a></li>
+      </ul>
+      <!-- TODO PHP: $_SESSION['cliente']['nome'] -->
+      <div class="nav-user">
+        <div class="nav-avatar">A</div>
+        <span>Ana Luvualo</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container body-pad">
+
+  <!-- ====== CARDÁPIO + CARRINHO ====== -->
+  <!--
+    Dados: Produto (id_produto, nome, descricao, preco)
+    Relacionamento: Cliente → Pedido → ItemPedido → Produto
+    TODO PHP: GET /api/produtos/publico
+  -->
+  <div class="pagina ativa" id="pg-cardapio">
+    <div class="row g-4">
+
+      <!-- Coluna principal: produtos -->
+      <div class="col-lg-8">
+        <div class="mb-4">
+          <p class="s-eyebrow">O que deseja pedir?</p>
+          <h2 class="s-titulo">Cardápio</h2>
+        </div>
+
+        <!-- Filtros de categoria -->
+        <div class="d-flex flex-wrap gap-2 mb-4" id="filtros">
+          <button class="filtro-btn ativo" data-cat="todos">Todos</button>
+          <button class="filtro-btn" data-cat="prato">Pratos</button>
+          <button class="filtro-btn" data-cat="entrada">Entradas</button>
+          <button class="filtro-btn" data-cat="bebida">Bebidas</button>
+        </div>
+
+        <!-- Grid de produtos -->
+        <!-- TODO PHP: foreach($produtos as $p) -->
+        <div class="row g-3" id="grid-prods">
+          <!-- Pratos -->
+          <div class="col-sm-6 item-prod" data-cat="prato">
+            <div class="prod-card">
+              <div class="prod-head"><span class="prod-cat">Prato</span><i class="bi bi-bowl-hot prod-icon"></i></div>
+              <div class="prod-body">
+                <p class="prod-nome">Muamba de Galinha</p>
+                <p class="prod-desc">Frango cozido em óleo de palma com quiabo. Servido com funge de bombo.</p>
+                <div class="prod-rodape">
+                  <span class="prod-preco">2.500 Kz</span>
+                  <button class="btn-add" onclick="adicionarCart(1,'Muamba de Galinha',2500)"><i class="bi bi-plus-lg"></i>Adicionar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 item-prod" data-cat="prato">
+            <div class="prod-card">
+              <div class="prod-head"><span class="prod-cat">Prato</span><i class="bi bi-fire prod-icon"></i></div>
+              <div class="prod-body">
+                <p class="prod-nome">Calulu de Peixe</p>
+                <p class="prod-desc">Peixe seco com quiabo, beringela e folhas de batata. Acompanha arroz.</p>
+                <div class="prod-rodape">
+                  <span class="prod-preco">3.200 Kz</span>
+                  <button class="btn-add" onclick="adicionarCart(2,'Calulu de Peixe',3200)"><i class="bi bi-plus-lg"></i>Adicionar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 item-prod" data-cat="prato">
+            <div class="prod-card">
+              <div class="prod-head"><span class="prod-cat">Prato</span><i class="bi bi-basket2 prod-icon"></i></div>
+              <div class="prod-body">
+                <p class="prod-nome">Frango Grelhado</p>
+                <p class="prod-desc">Frango no carvão com piri-piri caseiro. Acompanha funge e feijão.</p>
+                <div class="prod-rodape">
+                  <span class="prod-preco">2.800 Kz</span>
+                  <button class="btn-add" onclick="adicionarCart(3,'Frango Grelhado',2800)"><i class="bi bi-plus-lg"></i>Adicionar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6 item-prod" data-cat="prato">
+            <div class="prod-card">
+              <div class="prod-head"><span class="prod-cat">Prato</span><i class="bi bi-cup-hot prod-icon"></i></div>
+              <div class="prod-body">
+                <p class="prod-nome">Moamba de Ginguba</p>
+                <p class="prod-desc">Carne de vaca em molho de amendoim com legumes frescos angolanos.</p>
+                <div class="prod-rodape">
+                  <span class="prod-preco">3.000 Kz</span>
+                  <button class="btn-add" onclick="adicionarCart(4,'Moamba de Ginguba',3000)"><i class="bi bi-plus-lg"></i>Adicionar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Entrada -->
+          <div class="col-sm-6 item-prod" data-cat="entrada">
+            <div class="prod-card">
+              <div class="prod-head" style="background:#f5f3ff;"><span class="prod-cat entrada">Entrada</span><i class="bi bi-leaf prod-icon" style="color:#7c3aed;"></i></div>
+              <div class="prod-body">
+                <p class="prod-nome">Salada de Makemba</p>
+                <p class="prod-desc">Banana frita com salada de tomate, cebola roxa e coentros frescos.</p>
+                <div class="prod-rodape">
+                  <span class="prod-preco">950 Kz</span>
+                  <button class="btn-add" onclick="adicionarCart(5,'Salada de Makemba',950)"><i class="bi bi-plus-lg"></i>Adicionar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Bebida -->
+          <div class="col-sm-6 item-prod" data-cat="bebida">
+            <div class="prod-card">
+              <div class="prod-head" style="background:#e0f2fe;"><span class="prod-cat bebida">Bebida</span><i class="bi bi-droplet prod-icon" style="color:#0ea5e9;"></i></div>
+              <div class="prod-body">
+                <p class="prod-nome">Sumo de Múcua</p>
+                <p class="prod-desc">Bebida natural de baobab. Refrescante, servida gelada sem adição de açúcar.</p>
+                <div class="prod-rodape">
+                  <span class="prod-preco">700 Kz</span>
+                  <button class="btn-add" onclick="adicionarCart(6,'Sumo de Múcua',700)"><i class="bi bi-plus-lg"></i>Adicionar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna lateral: carrinho -->
+      <!-- TODO PHP: submeter via POST /api/pedidos/criar — cria Pedido + ItemPedido -->
+      <div class="col-lg-4">
+        <div class="carrinho-wrap">
+          <div class="carr-titulo"><i class="bi bi-cart3"></i>O Meu Pedido <span id="carr-badge" style="font-size:.72rem;font-weight:700;background:var(--azul-vivo);color:#fff;padding:2px 8px;border-radius:100px;">0</span></div>
+          <div id="carr-lista"><div class="carr-vazio"><i class="bi bi-cart-x" style="font-size:1.5rem;color:var(--borda);display:block;margin-bottom:8px;"></i>Adicione itens do cardápio</div></div>
+          <div class="carr-total-row" id="carr-total-row" style="display:none;">
+            <span class="carr-total-label">Total</span>
+            <span class="carr-total-val" id="carr-total">0 Kz</span>
+          </div>
+          <button class="btn-confirmar" id="btn-confirmar" disabled onclick="confirmarPedido()">
+            <i class="bi bi-check-circle me-2"></i>Confirmar Pedido
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ====== MEUS PEDIDOS ====== -->
+  <!--
+    Fonte: Cliente (id_cliente) → Pedido (id_pedido, status, data) → ItemPedido → Produto
+    TODO PHP: GET /api/clientes/{id}/pedidos
+  -->
+  <div class="pagina" id="pg-meus-pedidos">
+    <div class="mb-4">
+      <p class="s-eyebrow">Histórico pessoal</p>
+      <h2 class="s-titulo">Meus Pedidos</h2>
+    </div>
+    <div id="lista-meus-pedidos"></div>
+  </div>
+
+
+  <!-- ====== PAGAMENTO ====== -->
+  <!--
+    Tabela: Pagamento (id_pagamento, id_pedido, metodo, valor, status)
+    TODO PHP: POST /api/pagamentos/criar — registar pagamento vinculado ao pedido
+  -->
+  <div class="pagina" id="pg-pagamento">
+    <div class="mb-4">
+      <p class="s-eyebrow">Finalizar conta</p>
+      <h2 class="s-titulo">Pagamento</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-7">
+        <div class="pag-card">
+          <div class="pag-titulo">Escolha o método de pagamento</div>
+
+          <!-- Métodos de pagamento — comuns em Angola -->
+          <div class="metodo-opcoes" id="metodos">
+            <button class="metodo-btn ativo" data-met="Multicaixa Express" onclick="selecionarMet(this)">
+              <i class="bi bi-phone"></i>Multicaixa Express
+            </button>
+            <button class="metodo-btn" data-met="TPA" onclick="selecionarMet(this)">
+              <i class="bi bi-credit-card"></i>TPA (Cartão)
+            </button>
+            <button class="metodo-btn" data-met="Dinheiro" onclick="selecionarMet(this)">
+              <i class="bi bi-cash"></i>Dinheiro
+            </button>
+          </div>
+
+          <!-- Campo condicional: número Multicaixa -->
+          <div id="campo-multicaixa" class="mb-3">
+            <label class="form-label-c">Número de Telefone (Multicaixa)</label>
+            <input type="tel" class="form-control-c" placeholder="+244 9XX XXX XXX" />
+          </div>
+
+          <!-- Número do pedido a pagar -->
+          <div class="mb-3">
+            <label class="form-label-c">Número do Pedido</label>
+            <!-- TODO PHP: select dos pedidos com pagamento pendente do cliente -->
+            <select class="form-control-c" id="sel-pedido-pag">
+              <option value="">Selecione o pedido...</option>
+            </select>
+          </div>
+
+          <button class="btn-confirmar" style="margin-top:0;" onclick="registarPagamento()">
+            <i class="bi bi-shield-check me-2"></i>Confirmar Pagamento
+          </button>
+        </div>
+      </div>
+
+      <!-- Resumo dos pagamentos já feitos -->
+      <div class="col-lg-5">
+        <div class="pag-card">
+          <div class="pag-titulo">Histórico de Pagamentos</div>
+          <!-- TODO PHP: SELECT * FROM Pagamento WHERE id_pedido IN (pedidos do cliente) -->
+          <div id="hist-pagamentos" style="font-size:.87rem;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ====== PERFIL ====== -->
+  <!--
+    Tabela: Cliente (id_cliente, nome, telefone, email)
+    TODO PHP: GET /api/clientes/{id_cliente} — PUT /api/clientes/{id}/atualizar
+  -->
+  <div class="pagina" id="pg-perfil">
+    <div class="mb-4">
+      <p class="s-eyebrow">A minha conta</p>
+      <h2 class="s-titulo">Perfil</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="perfil-card text-center">
+          <div class="perfil-avatar mx-auto">A</div>
+          <!-- TODO PHP: $cliente['nome'], $cliente['email'] -->
+          <div class="perfil-nome">Ana Luvualo</div>
+          <div class="perfil-email mb-3">ana@gmail.com</div>
+          <div style="font-size:.82rem;color:var(--texto-muted);">Cliente desde Janeiro 2025</div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--borda);">
+            <div style="font-size:.82rem;color:var(--texto-muted);">Pedidos realizados</div>
+            <div style="font-family:'DM Serif Display',serif;font-size:2rem;color:var(--azul);">8</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="perfil-card">
+          <div style="font-weight:600;font-size:.95rem;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--borda);">Editar Dados</div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label-c">Nome completo</label>
+              <input type="text" class="form-control-c" value="Ana Luvualo" />
+            </div>
+            <div class="col-md-6">
+              <label class="form-label-c">Telefone</label>
+              <input type="tel" class="form-control-c" value="+244 923 111 222" />
+            </div>
+            <div class="col-12">
+              <label class="form-label-c">E-mail</label>
+              <input type="email" class="form-control-c" value="ana@gmail.com" />
+            </div>
+            <div class="col-12">
+              <button class="btn-confirmar" style="margin-top:4px;" onclick="alert('Dados atualizados com sucesso!\n\nTODO PHP: PUT /api/clientes/1/atualizar')">
+                <i class="bi bi-floppy me-2"></i>Guardar Alterações
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  /* ============================================================
+     MOCK DATA — Dados simulados do cliente autenticado
+     Cadeia: Cliente → Pedido → ItemPedido → Produto → Pagamento
+     TODO PHP: substituir por fetch('/api/clientes/1/dados')
+  ============================================================ */
+
+  /* Pedidos do cliente Ana (id_cliente = 1) */
+  let meusPedidos = [
+    {id:'P-001',data:'04/03/2025 08:12',itens:'Muamba de Galinha × 1, Sumo de Múcua × 2',total:3900,st:'Concluído',  pago:true },
+    {id:'P-006',data:'04/03/2025 11:30',itens:'Muamba de Galinha × 2',                   total:5000,st:'Cancelado',  pago:false},
+    {id:'P-008',data:'04/03/2025 14:00',itens:'Calulu de Peixe × 1, Frango Grelhado × 1',total:6000,st:'Em preparo', pago:false},
+  ];
+
+  /* Pagamentos do cliente */
+  let meusPagamentos = [
+    {ped:'P-001',met:'Multicaixa Express',val:3900,st:'Pago'},
+  ];
+
+  /* Carrinho de compras (estado em memória) */
+  let carrinho = [];
+
+  /* Mapa de status → CSS */
+  function stClass(s){return{Pendente:'st-pend','Em preparo':'st-prep','Concluído':'st-conc',Cancelado:'st-canc'}[s]||'st-pend';}
+
+  /* ============================================================
+     CARRINHO — adicionar / remover / renderizar
+     TODO PHP: após confirmar → POST /api/pedidos/criar (Pedido + ItemPedido)
+  ============================================================ */
+  function adicionarCart(id,nome,preco){
+    const ex=carrinho.find(x=>x.id===id);
+    if(ex){ex.qtd++;}else{carrinho.push({id,nome,preco,qtd:1});}
+    renderCarrinho();
+  }
+
+  function removerCart(id){
+    const idx=carrinho.findIndex(x=>x.id===id);
+    if(idx===-1)return;
+    if(carrinho[idx].qtd>1){carrinho[idx].qtd--;}else{carrinho.splice(idx,1);}
+    renderCarrinho();
+  }
+
+  function renderCarrinho(){
+    const lista=document.getElementById('carr-lista');
+    const totalRow=document.getElementById('carr-total-row');
+    const totalEl=document.getElementById('carr-total');
+    const badge=document.getElementById('carr-badge');
+    const btnConf=document.getElementById('btn-confirmar');
+
+    const qtdTotal=carrinho.reduce((a,x)=>a+x.qtd,0);
+    badge.textContent=qtdTotal;
+
+    if(carrinho.length===0){
+      lista.innerHTML='<div class="carr-vazio"><i class="bi bi-cart-x" style="font-size:1.5rem;color:var(--borda);display:block;margin-bottom:8px;"></i>Adicione itens do cardápio</div>';
+      totalRow.style.display='none';
+      btnConf.disabled=true;
+      return;
+    }
+
+    let total=0;
+    lista.innerHTML=carrinho.map(item=>{
+      const sub=item.preco*item.qtd;
+      total+=sub;
+      return `<div class="carr-item">
+        <span class="carr-item-nome">${item.nome}<br><span style="font-size:.75rem;color:var(--texto-muted);">× ${item.qtd}</span></span>
+        <div class="d-flex align-items-center gap-2">
+          <span class="carr-item-val">${sub.toLocaleString('pt-AO')} Kz</span>
+          <button onclick="removerCart(${item.id})" style="background:none;border:none;cursor:pointer;color:#dc2626;font-size:.85rem;"><i class="bi bi-dash-circle"></i></button>
+        </div>
+      </div>`;
+    }).join('');
+
+    totalRow.style.display='flex';
+    totalEl.textContent=total.toLocaleString('pt-AO')+' Kz';
+    btnConf.disabled=false;
+  }
+
+  /* Confirmar pedido — cria Pedido + ItemPedido */
+  /* TODO PHP: POST /api/pedidos/criar com body {id_cliente, itens:[{id_produto,quantidade,preco_unitario}]} */
+  function confirmarPedido(){
+    if(carrinho.length===0)return;
+    const total=carrinho.reduce((a,x)=>a+(x.preco*x.qtd),0);
+    const novoId='P-00'+( meusPedidos.length+1 );
+    const itensStr=carrinho.map(x=>x.nome+' × '+x.qtd).join(', ');
+    meusPedidos.unshift({id:novoId,data:new Date().toLocaleString('pt-AO'),itens:itensStr,total,st:'Pendente',pago:false});
+    carrinho=[];
+    renderCarrinho();
+    renderMeusPedidos();
+    populaSelectPedidos();
+    alert('Pedido '+novoId+' confirmado com sucesso!\n\nO seu pedido está a ser preparado.\n\nTODO PHP: inserir em Pedido + ItemPedido');
+  }
+
+  /* ============================================================
+     MEUS PEDIDOS — renderização
+  ============================================================ */
+  function renderMeusPedidos(){
+    const div=document.getElementById('lista-meus-pedidos');
+    div.innerHTML=meusPedidos.length===0
+      ?'<div style="text-align:center;padding:40px;color:var(--texto-muted);">Nenhum pedido ainda.</div>'
+      :meusPedidos.map(p=>`
+        <div class="meu-ped">
+          <div class="meu-ped-topo">
+            <div><span class="meu-ped-id">${p.id}</span> <span class="meu-ped-data">— ${p.data}</span></div>
+            <span class="badge-st ${stClass(p.st)}">${p.st}</span>
+          </div>
+          <div class="meu-ped-itens">${p.itens}</div>
+          <div class="meu-ped-rodape">
+            <div class="meu-ped-total">Total: ${p.total.toLocaleString('pt-AO')} Kz</div>
+            ${!p.pago&&p.st!=='Cancelado'?'<button class="btn-add" onclick="irParaPagamento(\''+p.id+'\')"><i class="bi bi-credit-card me-1"></i>Pagar</button>':''}
+            ${p.pago?'<span style="font-size:.78rem;color:#15803d;"><i class="bi bi-check-circle-fill me-1"></i>Pago</span>':''}
+          </div>
+        </div>`).join('');
+  }
+
+  /* ============================================================
+     PAGAMENTO — lógica
+     TODO PHP: POST /api/pagamentos/criar — Tabela Pagamento
+  ============================================================ */
+  let metodoPag='Multicaixa Express';
+
+  function selecionarMet(btn){
+    document.querySelectorAll('.metodo-btn').forEach(b=>b.classList.remove('ativo'));
+    btn.classList.add('ativo');
+    metodoPag=btn.getAttribute('data-met');
+    document.getElementById('campo-multicaixa').style.display=metodoPag==='Multicaixa Express'?'block':'none';
+  }
+
+  function populaSelectPedidos(){
+    const sel=document.getElementById('sel-pedido-pag');
+    const pendentes=meusPedidos.filter(p=>!p.pago&&p.st!=='Cancelado');
+    sel.innerHTML='<option value="">Selecione o pedido...</option>'+
+      pendentes.map(p=>'<option value="'+p.id+'">'+p.id+' — '+p.total.toLocaleString('pt-AO')+' Kz</option>').join('');
+  }
+
+  function irParaPagamento(idPed){
+    ir('pagamento');
+    setTimeout(()=>{
+      const sel=document.getElementById('sel-pedido-pag');
+      for(let i=0;i<sel.options.length;i++){if(sel.options[i].value===idPed){sel.selectedIndex=i;break;}}
+    },100);
+  }
+
+  function registarPagamento(){
+    const sel=document.getElementById('sel-pedido-pag');
+    const idPed=sel.value;
+    if(!idPed){alert('Selecione um pedido.');return;}
+    const p=meusPedidos.find(x=>x.id===idPed);
+    if(!p)return;
+    p.pago=true;
+    meusPagamentos.push({ped:idPed,met:metodoPag,val:p.total,st:'Pago'});
+    renderHistPagamentos();
+    renderMeusPedidos();
+    populaSelectPedidos();
+    alert('Pagamento registado com sucesso!\n\nPedido: '+idPed+'\nMétodo: '+metodoPag+'\nValor: '+p.total.toLocaleString('pt-AO')+' Kz\n\nTODO PHP: INSERT INTO Pagamento ...');
+  }
+
+  function renderHistPagamentos(){
+    const div=document.getElementById('hist-pagamentos');
+    div.innerHTML=meusPagamentos.length===0
+      ?'<div style="color:var(--texto-muted);text-align:center;padding:20px;">Nenhum pagamento ainda.</div>'
+      :meusPagamentos.map(p=>`
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--borda);">
+          <div>
+            <div style="font-weight:600;font-size:.85rem;">${p.ped}</div>
+            <div style="font-size:.75rem;color:var(--texto-muted);">${p.met}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-weight:700;color:var(--azul);font-size:.9rem;">${p.val.toLocaleString('pt-AO')} Kz</div>
+            <span class="badge-st" style="background:#dcfce7;color:#15803d;">${p.st}</span>
+          </div>
+        </div>`).join('');
+  }
+
+  /* ============================================================
+     FILTRO DO CARDÁPIO
+  ============================================================ */
+  document.querySelectorAll('.filtro-btn').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.filtro-btn').forEach(b=>b.classList.remove('ativo'));
+      this.classList.add('ativo');
+      const cat=this.getAttribute('data-cat');
+      document.querySelectorAll('.item-prod').forEach(i=>{
+        i.style.display=(cat==='todos'||i.getAttribute('data-cat')===cat)?'':'none';
+      });
+    });
+  });
+
+  /* ============================================================
+     NAVEGAÇÃO SPA
+  ============================================================ */
+  function ir(pg){
+    document.querySelectorAll('.pagina').forEach(p=>p.classList.remove('ativa'));
+    document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('ativo'));
+    document.getElementById('pg-'+pg).classList.add('ativa');
+    document.querySelectorAll('.nav-link').forEach(l=>{
+      const mapa={cardapio:'Cardápio','meus-pedidos':'Meus','pagamento':'Pagamento',perfil:'Perfil'};
+      if(l.textContent.trim().startsWith(mapa[pg]||''))l.classList.add('ativo');
+    });
+    // Colapsa menu mobile ao navegar
+    const navCollapse=document.getElementById('navCli');
+    if(navCollapse.classList.contains('show')){
+      const bsCollapse=bootstrap.Collapse.getInstance(navCollapse);
+      if(bsCollapse)bsCollapse.hide();
+    }
+  }
+
+  /* Init */
+  renderCarrinho();
+  renderMeusPedidos();
+  populaSelectPedidos();
+  renderHistPagamentos();
+</script>
+</body>
+</html>

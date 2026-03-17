@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KiLombo — Dashboard Gerente</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root { --azul:#1a3c6e; --azul-medio:#2455a0; --azul-vivo:#2d6be4; --azul-claro:#e8f0fb; --sidebar-bg:#0f2744; --sidebar-w:230px; --texto:#111827; --texto-muted:#6b7280; --borda:#e2e8f0; --fundo:#f8fafc; --branco:#ffffff; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'DM Sans',sans-serif;background:var(--fundo);color:var(--texto);min-height:100vh;}
+    .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-w);height:100vh;background:var(--sidebar-bg);display:flex;flex-direction:column;z-index:300;overflow-y:auto;transition:transform 0.3s;}
+    .sb-logo{padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.08);}
+    .sb-logo-text{font-family:'DM Serif Display',serif;font-size:1.35rem;color:#fff;}
+    .sb-logo-text span{color:#93c5fd;}
+    .sb-role{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,0.35);margin-top:3px;}
+    .sb-nav{padding:16px 0;flex:1;}
+    .sb-group{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(255,255,255,0.28);padding:14px 20px 6px;}
+    .sb-link{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:.87rem;font-weight:500;color:rgba(255,255,255,0.6);cursor:pointer;border-left:3px solid transparent;transition:all 0.2s;text-decoration:none;}
+    .sb-link i{width:18px;font-size:1rem;}
+    .sb-link:hover{color:#fff;background:rgba(255,255,255,0.06);}
+    .sb-link.ativo{color:#fff;background:rgba(45,107,228,0.22);border-left-color:var(--azul-vivo);}
+    .sb-user{padding:16px 20px;border-top:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:10px;}
+    .sb-avatar{width:34px;height:34px;border-radius:50%;background:#0ea5e9;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:#fff;flex-shrink:0;}
+    .sb-uname{font-size:.83rem;font-weight:600;color:#fff;}
+    .sb-urole{font-size:.7rem;color:rgba(255,255,255,0.4);}
+    .main{margin-left:var(--sidebar-w);min-height:100vh;}
+    .topbar{background:#fff;border-bottom:1px solid var(--borda);padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+    .topbar-title{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--azul);}
+    .btn-sb-toggle{display:none;background:none;border:1px solid var(--borda);border-radius:8px;padding:6px 10px;color:var(--azul);cursor:pointer;}
+    .body-pad{padding:28px;}
+    .pagina{display:none;}
+    .pagina.ativa{display:block;}
+    .rc{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:20px;display:flex;align-items:center;gap:14px;transition:box-shadow 0.2s;}
+    .rc:hover{box-shadow:0 6px 24px rgba(26,60,110,0.1);}
+    .rc-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;background:var(--azul-claro);color:var(--azul-vivo);}
+    .rc-label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--texto-muted);}
+    .rc-valor{font-family:'DM Serif Display',serif;font-size:1.7rem;color:var(--azul);line-height:1.1;}
+    .ped-card{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:20px;transition:box-shadow 0.2s;}
+    .ped-card.urgente{border-left:4px solid #dc2626;}
+    .ped-card.preparo{border-left:4px solid #2d6be4;}
+    .ped-card.pronto{border-left:4px solid #16a34a;}
+    .ped-topo{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+    .ped-id{font-weight:700;font-size:.9rem;color:var(--azul);}
+    .ped-cli{font-size:.82rem;color:var(--texto-muted);}
+    .ped-itens{font-size:.83rem;color:var(--texto);margin-bottom:14px;line-height:1.6;}
+    .ped-rodape{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+    .ped-total{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--azul);}
+    .ped-tempo{font-size:.75rem;color:var(--texto-muted);}
+    .badge-st{font-size:.7rem;font-weight:700;padding:4px 10px;border-radius:100px;}
+    .st-pend{background:#fef9c3;color:#92400e;}
+    .st-prep{background:#dbeafe;color:#1e40af;}
+    .st-conc{background:#dcfce7;color:#15803d;}
+    .st-canc{background:#fee2e2;color:#991b1b;}
+    .btn-st{font-size:.75rem;font-weight:600;padding:5px 12px;border-radius:7px;border:none;cursor:pointer;transition:opacity 0.2s;}
+    .btn-st:hover{opacity:.8;}
+    .btn-iniciar{background:#dbeafe;color:#1e40af;}
+    .btn-finalizar{background:#dcfce7;color:#15803d;}
+    .btn-cancelar{background:#fee2e2;color:#dc2626;}
+    .tab-wrap{background:#fff;border:1px solid var(--borda);border-radius:14px;overflow:hidden;}
+    .tab-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--borda);flex-wrap:wrap;gap:10px;}
+    .tab-titulo{font-weight:600;font-size:.95rem;}
+    .tab-sub{font-size:.75rem;color:var(--texto-muted);margin-top:2px;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--texto-muted);padding:12px 20px;background:var(--fundo);border-bottom:1px solid var(--borda);white-space:nowrap;}
+    tbody td{font-size:.86rem;padding:12px 20px;border-bottom:1px solid var(--borda);vertical-align:middle;}
+    tbody tr:last-child td{border-bottom:none;}
+    tbody tr:hover{background:var(--fundo);}
+    .kanban-col{background:#fff;border:1px solid var(--borda);border-radius:14px;overflow:hidden;}
+    .kanban-head{padding:14px 18px;font-weight:700;font-size:.85rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--borda);}
+    .kanban-count{font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:100px;background:var(--azul-claro);color:var(--azul-vivo);}
+    .kanban-body{padding:14px;display:flex;flex-direction:column;gap:10px;min-height:200px;}
+    .kanban-item{background:var(--fundo);border:1px solid var(--borda);border-radius:10px;padding:12px;font-size:.83rem;}
+    .kanban-item strong{color:var(--azul);}
+    .kanban-item-meta{font-size:.75rem;color:var(--texto-muted);margin-top:4px;}
+    .bar-wrap{display:flex;align-items:center;gap:8px;}
+    .bar{flex:1;height:6px;background:var(--borda);border-radius:3px;overflow:hidden;}
+    .bar-fill{height:6px;background:var(--azul-vivo);border-radius:3px;}
+    .form-select{border:1.5px solid var(--borda);border-radius:8px;font-size:.83rem;padding:7px 12px;font-family:'DM Sans',sans-serif;}
+    @media(max-width:768px){.sidebar{transform:translateX(-100%)}.sidebar.aberta{transform:translateX(0)}.main{margin-left:0}.btn-sb-toggle{display:flex;align-items:center}.body-pad{padding:16px}.topbar{padding:12px 16px}}
+  </style>
+</head>
+<body>
+<div id="overlay" onclick="fecharSb()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:299;"></div>
+
+<aside class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-text">Ki<span>Lombo</span></div>
+    <div class="sb-role">Painel Gerente</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-group">Operações</div>
+    <a class="sb-link ativo" onclick="ir('ativos')"><i class="bi bi-lightning-charge-fill"></i>Pedidos Ativos</a>
+    <a class="sb-link" onclick="ir('cozinha')"><i class="bi bi-fire"></i>Cozinha</a>
+    <a class="sb-link" onclick="ir('historico')"><i class="bi bi-clock-history"></i>Histórico</a>
+    <div class="sb-group">Análise</div>
+    <a class="sb-link" onclick="ir('relatorios')"><i class="bi bi-bar-chart-line"></i>Relatórios</a>
+  </nav>
+  <div class="sb-user">
+    <div class="sb-avatar">G</div>
+    <div><div class="sb-uname">Manuel Domingos</div><div class="sb-urole">Gerente de Turno</div></div>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn-sb-toggle" onclick="toggleSb()"><i class="bi bi-list fs-5"></i></button>
+      <span class="topbar-title" id="pg-titulo">Pedidos Ativos</span>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <span style="font-size:.78rem;color:var(--texto-muted);"><span style="color:#16a34a;">●</span> Ao vivo</span>
+      <span style="font-size:.8rem;color:var(--texto-muted);" id="dt-atual"></span>
+      <a href="index.html" style="font-size:.82rem;color:var(--texto-muted);text-decoration:none;"><i class="bi bi-box-arrow-left me-1"></i>Sair</a>
+    </div>
+  </div>
+
+  <div class="body-pad">
+
+    <!-- PEDIDOS ATIVOS -->
+    <!-- TODO PHP: GET /api/pedidos?status=pendente,preparo — JOIN Pedido+ItemPedido+Cliente -->
+    <div class="pagina ativa" id="pg-ativos">
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+          <div class="rc">
+            <div class="rc-icon" style="background:#fef9c3;color:#d97706;"><i class="bi bi-hourglass-split"></i></div>
+            <div><div class="rc-label">Pendentes</div><div class="rc-valor" id="cnt-pend">0</div></div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="rc">
+            <div class="rc-icon" style="background:#dbeafe;color:#2d6be4;"><i class="bi bi-fire"></i></div>
+            <div><div class="rc-label">Em Preparo</div><div class="rc-valor" id="cnt-prep">0</div></div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="rc">
+            <div class="rc-icon" style="background:#dcfce7;color:#16a34a;"><i class="bi bi-check2-circle"></i></div>
+            <div><div class="rc-label">Concluídos Hoje</div><div class="rc-valor" id="cnt-conc">0</div></div>
+          </div>
+        </div>
+        <div class="col-6 col-lg-3">
+          <div class="rc">
+            <div class="rc-icon" style="background:#dcfce7;color:#16a34a;"><i class="bi bi-cash-stack"></i></div>
+            <!-- TODO PHP: SUM(Pagamento.valor) WHERE status='Pago' AND DATE=TODAY -->
+            <div><div class="rc-label">Faturado Hoje</div><div class="rc-valor" style="font-size:1.2rem;">124.800 Kz</div></div>
+          </div>
+        </div>
+      </div>
+      <div id="lista-ativos" class="row g-3"></div>
+    </div>
+
+    <!-- COZINHA KANBAN -->
+    <!-- TODO PHP: GET /api/cozinha — Pedido+ItemPedido+Produto — atualizar via polling/WebSocket -->
+    <div class="pagina" id="pg-cozinha">
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="kanban-col">
+            <div class="kanban-head" style="background:#fef9c3;"><span style="color:#92400e;">⏳ Aguardando</span><span class="kanban-count" style="background:#fef3c7;color:#92400e;" id="k-cnt-pend">0</span></div>
+            <div class="kanban-body" id="k-pend"></div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="kanban-col">
+            <div class="kanban-head" style="background:#dbeafe;"><span style="color:#1e40af;">🔥 Em Preparo</span><span class="kanban-count" id="k-cnt-prep">0</span></div>
+            <div class="kanban-body" id="k-prep"></div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="kanban-col">
+            <div class="kanban-head" style="background:#dcfce7;"><span style="color:#15803d;">✅ Pronto p/ Entrega</span><span class="kanban-count" style="background:#dcfce7;color:#15803d;" id="k-cnt-pronto">0</span></div>
+            <div class="kanban-body" id="k-pronto"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTÓRICO -->
+    <!-- TODO PHP: GET /api/pedidos?status=concluido,cancelado -->
+    <div class="pagina" id="pg-historico">
+      <div class="tab-wrap">
+        <div class="tab-header">
+          <div><div class="tab-titulo">Histórico de Pedidos</div><div class="tab-sub">Tabela: Pedido + Cliente + ItemPedido</div></div>
+          <select class="form-select" style="width:auto;" onchange="filtrarHist(this.value)">
+            <option value="todos">Todos</option><option value="Concluído">Concluídos</option><option value="Cancelado">Cancelados</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>ID</th><th>Cliente</th><th>Itens</th><th>Total</th><th>Status</th><th>Data</th></tr></thead>
+            <tbody id="tb-hist"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RELATÓRIOS -->
+    <!-- TODO PHP: GET /api/relatorios/dia — Pagamento + ItemPedido + Produto -->
+    <div class="pagina" id="pg-relatorios">
+      <div class="row g-3 mb-4">
+        <div class="col-md-6 col-lg-3"><div class="rc"><div class="rc-icon" style="background:#dcfce7;color:#16a34a;"><i class="bi bi-cash-coin"></i></div><div><div class="rc-label">Receita do Dia</div><div class="rc-valor" style="font-size:1.3rem;">124.800 Kz</div></div></div></div>
+        <div class="col-md-6 col-lg-3"><div class="rc"><div class="rc-icon"><i class="bi bi-receipt-cutoff"></i></div><div><div class="rc-label">Pedidos Hoje</div><div class="rc-valor">27</div></div></div></div>
+        <div class="col-md-6 col-lg-3"><div class="rc"><div class="rc-icon" style="background:#fef9c3;color:#d97706;"><i class="bi bi-x-circle"></i></div><div><div class="rc-label">Cancelamentos</div><div class="rc-valor">2</div></div></div></div>
+        <div class="col-md-6 col-lg-3"><div class="rc"><div class="rc-icon" style="background:#f3e8ff;color:#7c3aed;"><i class="bi bi-clock-history"></i></div><div><div class="rc-label">Tempo Médio</div><div class="rc-valor" style="font-size:1.3rem;">18 min</div></div></div></div>
+      </div>
+      <div class="tab-wrap mb-3">
+        <div class="tab-header"><div class="tab-titulo">Pagamentos por Método</div><div class="tab-sub">Tabela: Pagamento</div></div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Método</th><th>Transações</th><th>Valor Total</th><th>Participação</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Multicaixa Express</strong></td><td>14</td><td><strong>68.200 Kz</strong></td><td><div class="bar-wrap"><div class="bar"><div class="bar-fill" style="width:55%;"></div></div><span style="font-size:.78rem;color:var(--texto-muted);">55%</span></div></td></tr>
+              <tr><td><strong>Dinheiro</strong></td><td>9</td><td><strong>37.400 Kz</strong></td><td><div class="bar-wrap"><div class="bar"><div class="bar-fill" style="width:30%;"></div></div><span style="font-size:.78rem;color:var(--texto-muted);">30%</span></div></td></tr>
+              <tr><td><strong>TPA</strong></td><td>4</td><td><strong>19.200 Kz</strong></td><td><div class="bar-wrap"><div class="bar"><div class="bar-fill" style="width:15%;"></div></div><span style="font-size:.78rem;color:var(--texto-muted);">15%</span></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tab-wrap">
+        <div class="tab-header"><div class="tab-titulo">Pratos Mais Pedidos Hoje</div><div class="tab-sub">Tabela: ItemPedido + Produto</div></div>
+        <div style="overflow-x:auto;">
+          <table>
+            <thead><tr><th>Produto</th><th>Unidades</th><th>Receita</th><th>%</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Muamba de Galinha</strong></td><td>12</td><td>30.000 Kz</td><td><div class="bar-wrap"><div class="bar"><div class="bar-fill" style="width:44%;"></div></div><span style="font-size:.78rem;color:var(--texto-muted);">44%</span></div></td></tr>
+              <tr><td><strong>Frango Grelhado</strong></td><td>8</td><td>22.400 Kz</td><td><div class="bar-wrap"><div class="bar"><div class="bar-fill" style="width:30%;"></div></div><span style="font-size:.78rem;color:var(--texto-muted);">30%</span></div></td></tr>
+              <tr><td><strong>Calulu de Peixe</strong></td><td>5</td><td>16.000 Kz</td><td><div class="bar-wrap"><div class="bar"><div class="bar-fill" style="width:18%;"></div></div><span style="font-size:.78rem;color:var(--texto-muted);">18%</span></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  /* Mock data: Pedido + ItemPedido + Cliente — TODO PHP: fetch('/api/pedidos') */
+  let pedidos = [
+    {id:'P-003',cli:'Filomena Neto',  itens:[{n:'Calulu de Peixe',q:1,p:3200}],total:3200,st:'Pendente',  min:8},
+    {id:'P-005',cli:'Rosa Chitamba',  itens:[{n:'Frango Grelhado',q:1,p:2800},{n:'Sumo de Múcua',q:1,p:700}],total:3500,st:'Pendente',min:12},
+    {id:'P-002',cli:'Carlos Mbemba',  itens:[{n:'Frango Grelhado',q:2,p:2800}],total:5600,st:'Em preparo',min:5},
+    {id:'P-007',cli:'Carlos Mbemba',  itens:[{n:'Calulu de Peixe',q:2,p:3200},{n:'Sumo de Múcua',q:1,p:700}],total:7100,st:'Em preparo',min:2},
+    {id:'P-001',cli:'Ana Luvualo',    itens:[{n:'Muamba de Galinha',q:1,p:2500},{n:'Sumo de Múcua',q:2,p:700}],total:3900,st:'Concluído',min:0},
+    {id:'P-004',cli:'João Sebastião', itens:[{n:'Moamba de Ginguba',q:1,p:3000},{n:'Salada de Makemba',q:1,p:950}],total:3950,st:'Concluído',min:0},
+    {id:'P-006',cli:'Ana Luvualo',    itens:[{n:'Muamba de Galinha',q:2,p:2500}],total:5000,st:'Cancelado',min:0},
+  ];
+
+  function stClass(s){return{Pendente:'st-pend','Em preparo':'st-prep','Concluído':'st-conc',Cancelado:'st-canc'}[s]||'st-pend';}
+  function stCard(s){return{Pendente:'urgente','Em preparo':'preparo','Concluído':'pronto'}[s]||'';}
+
+  function atualizarCnt(){
+    document.getElementById('cnt-pend').textContent=pedidos.filter(p=>p.st==='Pendente').length;
+    document.getElementById('cnt-prep').textContent=pedidos.filter(p=>p.st==='Em preparo').length;
+    document.getElementById('cnt-conc').textContent=pedidos.filter(p=>p.st==='Concluído').length;
+  }
+
+  function rAtivos(){
+    const ativos=pedidos.filter(p=>p.st==='Pendente'||p.st==='Em preparo');
+    const div=document.getElementById('lista-ativos');
+    div.innerHTML=ativos.length===0?'<div class="col-12"><div style="background:#fff;border:1px solid var(--borda);border-radius:14px;padding:40px;text-align:center;color:var(--texto-muted);">Nenhum pedido ativo.</div></div>':ativos.map(p=>`
+      <div class="col-md-6 col-xl-4">
+        <div class="ped-card ${stCard(p.st)}">
+          <div class="ped-topo">
+            <div><div class="ped-id">${p.id}</div><div class="ped-cli"><i class="bi bi-person me-1"></i>${p.cli}</div></div>
+            <span class="badge-st ${stClass(p.st)}">${p.st}</span>
+          </div>
+          <div class="ped-itens">${p.itens.map(i=>`<span><strong>${i.n}</strong> × ${i.q} — ${(i.p*i.q).toLocaleString('pt-AO')} Kz</span><br>`).join('')}</div>
+          <div class="ped-rodape">
+            <div>
+              <div class="ped-total">Total: ${p.total.toLocaleString('pt-AO')} Kz</div>
+              <div class="ped-tempo">${p.min>0?'Há '+p.min+' min':'Recém chegou'}</div>
+            </div>
+            <div class="d-flex gap-1 flex-wrap">
+              ${p.st==='Pendente'?'<button class="btn-st btn-iniciar" onclick="mudar(\''+p.id+'\',\'Em preparo\')"><i class="bi bi-fire me-1"></i>Iniciar</button>':''}
+              ${p.st==='Em preparo'?'<button class="btn-st btn-finalizar" onclick="mudar(\''+p.id+'\',\'Concluído\')"><i class="bi bi-check-circle me-1"></i>Finalizar</button>':''}
+              <button class="btn-st btn-cancelar" onclick="mudar('${p.id}','Cancelado')"><i class="bi bi-x"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>`).join('');
+    atualizarCnt();
+  }
+
+  /* TODO PHP: PUT /api/pedidos/{id}/status */
+  function mudar(id,novo){const p=pedidos.find(x=>x.id===id);if(p){p.st=novo;rAtivos();rKanban();rHistorico();}}
+
+  function kanbanItem(p){return`<div class="kanban-item"><strong>${p.id}</strong> — ${p.cli}<div class="kanban-item-meta">${p.itens.map(i=>i.n+' × '+i.q).join(' · ')}</div><div class="kanban-item-meta" style="margin-top:6px;">Total: <strong>${p.total.toLocaleString('pt-AO')} Kz</strong></div></div>`;}
+  const semItem='<div style="font-size:.82rem;color:var(--texto-muted);text-align:center;padding:20px;">Nenhum</div>';
+
+  function rKanban(){
+    const pe=pedidos.filter(p=>p.st==='Pendente');
+    const pr=pedidos.filter(p=>p.st==='Em preparo');
+    const co=pedidos.filter(p=>p.st==='Concluído');
+    document.getElementById('k-cnt-pend').textContent=pe.length;
+    document.getElementById('k-cnt-prep').textContent=pr.length;
+    document.getElementById('k-cnt-pronto').textContent=co.length;
+    document.getElementById('k-pend').innerHTML=pe.map(kanbanItem).join('')||semItem;
+    document.getElementById('k-prep').innerHTML=pr.map(kanbanItem).join('')||semItem;
+    document.getElementById('k-pronto').innerHTML=co.map(kanbanItem).join('')||semItem;
+  }
+
+  let histFiltro='todos';
+  function rHistorico(){
+    const lista=histFiltro==='todos'?pedidos:pedidos.filter(p=>p.st===histFiltro);
+    document.getElementById('tb-hist').innerHTML=lista.map(p=>`<tr><td><strong>${p.id}</strong></td><td>${p.cli}</td><td style="font-size:.82rem;">${p.itens.map(i=>i.n+'×'+i.q).join(', ')}</td><td><strong>${p.total.toLocaleString('pt-AO')} Kz</strong></td><td><span class="badge-st ${stClass(p.st)}">${p.st}</span></td><td style="font-size:.82rem;color:var(--texto-muted);">04/03/2025</td></tr>`).join('');
+  }
+  function filtrarHist(v){histFiltro=v;rHistorico();}
+
+  const titulos={ativos:'Pedidos Ativos',cozinha:'Cozinha',historico:'Histórico',relatorios:'Relatórios'};
+  function ir(pg){
+    document.querySelectorAll('.pagina').forEach(p=>p.classList.remove('ativa'));
+    document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('ativo'));
+    document.getElementById('pg-'+pg).classList.add('ativa');
+    document.querySelectorAll('.sb-link').forEach(l=>{if(l.textContent.trim().toLowerCase().startsWith((titulos[pg]||'').split(' ')[0].toLowerCase()))l.classList.add('ativo');});
+    document.getElementById('pg-titulo').textContent=titulos[pg]||pg;
+    fecharSb();
+  }
+
+  function toggleSb(){document.getElementById('sidebar').classList.toggle('aberta');document.getElementById('overlay').style.display=document.getElementById('sidebar').classList.contains('aberta')?'block':'none';}
+  function fecharSb(){document.getElementById('sidebar').classList.remove('aberta');document.getElementById('overlay').style.display='none';}
+
+  document.getElementById('dt-atual').textContent=new Date().toLocaleDateString('pt-AO',{day:'2-digit',month:'short',year:'numeric'});
+  rAtivos();rKanban();rHistorico();
+</script>
+</body>
+</html>

@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KiLombo — Dashboard Administrador</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       VARIÁVEIS DO SISTEMA DE DESIGN — KiLombo
+       Shared across all 3 dashboards for consistency
+    ============================================================ */
+    :root {
+      --azul:        #1a3c6e;
+      --azul-medio:  #2455a0;
+      --azul-vivo:   #2d6be4;
+      --azul-claro:  #e8f0fb;
+      --azul-bg:     #f0f5ff;
+      --ciano:       #0ea5e9;
+      --texto:       #111827;
+      --muted:       #6b7280;
+      --borda:       #e2e8f0;
+      --fundo:       #f8fafc;
+      --branco:      #ffffff;
+      --sidebar-w:   240px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--fundo); color: var(--texto); }
+
+    /* ============================================================
+       SIDEBAR — Navegação lateral fixa do administrador
+       Links futuros: cada item fará fetch para a rota MVC
+         Ex: /admin/produtos, /admin/clientes, etc.
+    ============================================================ */
+    .sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: var(--sidebar-w);
+      height: 100vh;
+      background: var(--azul);
+      display: flex;
+      flex-direction: column;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    /* Logo na sidebar */
+    .sidebar-logo {
+      padding: 22px 20px 18px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .sidebar-logo .brand {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.4rem;
+      color: var(--branco);
+      text-decoration: none;
+    }
+
+    .sidebar-logo .brand span { color: #93c5fd; }
+
+    .sidebar-logo .role-tag {
+      font-size: 0.68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.45);
+      margin-top: 2px;
+    }
+
+    /* Links de navegação na sidebar */
+    .sidebar-nav { padding: 16px 0; flex: 1; overflow-y: auto; }
+
+    .sidebar-section-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.3);
+      padding: 8px 20px 6px;
+    }
+
+    .nav-item-sidebar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      border-radius: 0;
+      transition: background 0.2s, color 0.2s;
+      border-left: 3px solid transparent;
+      text-decoration: none;
+    }
+
+    .nav-item-sidebar:hover,
+    .nav-item-sidebar.ativo {
+      background: rgba(255,255,255,0.1);
+      color: var(--branco);
+      border-left-color: #93c5fd;
+    }
+
+    .nav-item-sidebar i { font-size: 1rem; width: 18px; }
+
+    /* Perfil do admin no fundo da sidebar */
+    .sidebar-footer {
+      padding: 16px 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      background: var(--azul-vivo);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--branco);
+      flex-shrink: 0;
+    }
+
+    .sidebar-footer-info .name {
+      font-size: 0.83rem;
+      font-weight: 600;
+      color: var(--branco);
+    }
+
+    .sidebar-footer-info .role {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.45);
+    }
+
+    /* ============================================================
+       ÁREA PRINCIPAL — Conteúdo à direita da sidebar
+    ============================================================ */
+    .main-wrap {
+      margin-left: var(--sidebar-w);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Topbar */
+    .topbar {
+      background: var(--branco);
+      border-bottom: 1px solid var(--borda);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--texto);
+    }
+
+    .topbar-right { display: flex; align-items: center; gap: 12px; }
+
+    .topbar-date {
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    .btn-toggle-sidebar {
+      display: none;
+      background: none;
+      border: 1px solid var(--borda);
+      border-radius: 7px;
+      padding: 6px 10px;
+      cursor: pointer;
+      color: var(--texto);
+    }
+
+    /* Conteúdo principal */
+    .main-content { padding: 28px; flex: 1; }
+
+    /* ============================================================
+       CARDS DE RESUMO NO TOPO
+       TODO PHP: dados virão de queries nas tabelas:
+         - Pedido (COUNT total, COUNT WHERE status='pendente')
+         - Pagamento (SUM valor WHERE DATE = hoje)
+         - Cliente (COUNT total)
+    ============================================================ */
+    .summary-card {
+      background: var(--branco);
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      padding: 22px;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+
+    .summary-card:hover {
+      box-shadow: 0 8px 28px rgba(26,60,110,0.09);
+      transform: translateY(-3px);
+    }
+
+    .summary-card::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      opacity: 0.07;
+    }
+
+    .card-azul::before  { background: var(--azul-vivo); }
+    .card-laranja::before { background: #f97316; }
+    .card-verde::before { background: #16a34a; }
+    .card-roxo::before  { background: #7c3aed; }
+
+    .summary-icon {
+      width: 44px; height: 44px;
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      margin-bottom: 14px;
+    }
+
+    .icon-azul   { background: var(--azul-claro); color: var(--azul-vivo); }
+    .icon-laranja { background: #fff7ed; color: #f97316; }
+    .icon-verde  { background: #f0fdf4; color: #16a34a; }
+    .icon-roxo   { background: #f5f3ff; color: #7c3aed; }
+
+    .summary-label {
+      font-size: 0.78rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .summary-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.9rem;
+      color: var(--texto);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .summary-delta {
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+
+    .delta-up   { color: #16a34a; }
+    .delta-down { color: #dc2626; }
+
+    /* ============================================================
+       TABELAS GERAIS
+    ============================================================ */
+    .section-card {
+      background: var(--branco);
+      border: 1px solid var(--borda);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--borda);
+    }
+
+    .section-head-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--texto);
+    }
+
+    .section-head-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .btn-sm-azul {
+      font-size: 0.78rem;
+      font-weight: 600;
+      background: var(--azul-claro);
+      color: var(--azul-vivo);
+      border: none;
+      border-radius: 7px;
+      padding: 6px 14px;
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .btn-sm-azul:hover { background: var(--azul-vivo); color: var(--branco); }
+
+    /* Tabela interna */
+    .table-km {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.87rem;
+    }
+
+    .table-km thead th {
+      background: var(--fundo);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--muted);
+      padding: 11px 16px;
+      border-bottom: 1px solid var(--borda);
+      white-space: nowrap;
+    }
+
+    .table-km tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--borda);
+      color: var(--texto);
+      vertical-align: middle;
+    }
+
+    .table-km tbody tr:last-child td { border-bottom: none; }
+
+    .table-km tbody tr:hover { background: var(--fundo); }
+
+    /* Badges de status */
+    .badge-status {
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .s-pendente  { background: #fef9c3; color: #854d0e; }
+    .s-preparo   { background: #dbeafe; color: #1d4ed8; }
+    .s-concluido { background: #dcfce7; color: #15803d; }
+    .s-cancelado { background: #fee2e2; color: #b91c1c; }
+    .s-pago      { background: #dcfce7; color: #15803d; }
+    .s-aguardando { background: #fef9c3; color: #854d0e; }
+
+    /* Botões de ação na tabela */
+    .btn-tbl {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 7px;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-ver    { background: var(--azul-claro); color: var(--azul-vivo); }
+    .btn-editar { background: #fff7ed; color: #c2410c; }
+    .btn-excluir { background: #fee2e2; color: #b91c1c; }
+
+    .btn-tbl:hover { opacity: 0.75; }
+
+    /* ============================================================
+       PAINEL DE NAVEGAÇÃO — Controla quais seções são exibidas
+    ============================================================ */
+    .dashboard-section { display: none; }
+    .dashboard-section.ativa { display: block; }
+
+    /* ============================================================
+       RESPONSIVO — Mobile
+    ============================================================ */
+    @media (max-width: 991px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.aberta { transform: translateX(0); }
+      .main-wrap { margin-left: 0; }
+      .btn-toggle-sidebar { display: flex; }
+      .main-content { padding: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     SIDEBAR — Navegação do Administrador
+     TODO PHP MVC: cada link chamará o Controller correspondente
+       Ex: /admin/dashboard, /admin/produtos, /admin/clientes
+============================================================ -->
+<aside class="sidebar" id="sidebar">
+
+  <div class="sidebar-logo">
+    <a href="index.html" class="brand">Ki<span>Lombo</span></a>
+    <div class="role-tag">Painel do Administrador</div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="sidebar-section-title">Principal</div>
+
+    <a class="nav-item-sidebar ativo" onclick="mostrarSecao('dashboard', this)">
+      <i class="bi bi-grid-1x2"></i> Dashboard
+    </a>
+    <a class="nav-item-sidebar" onclick="mostrarSecao('produtos', this)">
+      <i class="bi bi-journal-text"></i> Gerir Produtos
+    </a>
+    <a class="nav-item-sidebar" onclick="mostrarSecao('clientes', this)">
+      <i class="bi bi-people"></i> Gerir Clientes
+    </a>
+
+    <div class="sidebar-section-title mt-2">Operações</div>
+
+    <a class="nav-item-sidebar" onclick="mostrarSecao('pedidos', this)">
+      <i class="bi bi-receipt"></i> Pedidos
+    </a>
+    <a class="nav-item-sidebar" onclick="mostrarSecao('pagamentos', this)">
+      <i class="bi bi-credit-card-2-front"></i> Pagamentos
+    </a>
+    <a class="nav-item-sidebar" onclick="mostrarSecao('relatorios', this)">
+      <i class="bi bi-bar-chart-line"></i> Relatórios
+    </a>
+
+    <div class="sidebar-section-title mt-2">Sistema</div>
+
+    <a class="nav-item-sidebar" href="gerente-dashboard.html">
+      <i class="bi bi-arrow-left-right"></i> Painel Gerente
+    </a>
+    <a class="nav-item-sidebar" href="cliente-dashboard.html">
+      <i class="bi bi-person"></i> Painel Cliente
+    </a>
+  </nav>
+
+  <!-- Perfil do administrador logado -->
+  <!-- TODO PHP: dados de $_SESSION['user'] -->
+  <div class="sidebar-footer">
+    <div class="avatar">JM</div>
+    <div class="sidebar-footer-info">
+      <div class="name">João Mateus</div>
+      <div class="role">Administrador</div>
+    </div>
+  </div>
+
+</aside>
+
+<!-- ============================================================
+     ÁREA PRINCIPAL
+============================================================ -->
+<div class="main-wrap">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="d-flex align-items-center gap-3">
+      <button class="btn-toggle-sidebar" onclick="toggleSidebar()">
+        <i class="bi bi-list fs-5"></i>
+      </button>
+      <span class="topbar-title" id="topbar-title">Dashboard Geral</span>
+    </div>
+    <div class="topbar-right">
+      <span class="topbar-date" id="data-hoje"></span>
+      <div class="avatar" style="width:32px;height:32px;font-size:0.78rem;">JM</div>
+    </div>
+  </div>
+
+  <div class="main-content">
+
+    <!-- ========================================================
+         SEÇÃO: DASHBOARD GERAL
+         Dados virão de:
+           - Pedido: COUNT(*), COUNT(status='pendente')
+           - Pagamento: SUM(valor) WHERE DATE(data)=CURDATE()
+           - Cliente: COUNT(*)
+    ======================================================== -->
+    <div class="dashboard-section ativa" id="sec-dashboard">
+
+      <!-- Cards de resumo -->
+      <!-- TODO PHP: substituir valores por <?= $stats['total_pedidos'] ?> etc. -->
+      <div class="row g-3 mb-4">
+
+        <div class="col-6 col-xl-3">
+          <div class="summary-card card-azul">
+            <div class="summary-icon icon-azul"><i class="bi bi-receipt"></i></div>
+            <div class="summary-label">Total de Pedidos</div>
+            <div class="summary-value">1.248</div>
+            <div class="summary-delta delta-up"><i class="bi bi-arrow-up-short"></i>+12% este mês</div>
+          </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+          <div class="summary-card card-laranja">
+            <div class="summary-icon icon-laranja"><i class="bi bi-hourglass-split"></i></div>
+            <div class="summary-label">Pedidos Pendentes</div>
+            <div class="summary-value">14</div>
+            <div class="summary-delta delta-down"><i class="bi bi-arrow-down-short"></i>-3 desde ontem</div>
+          </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+          <div class="summary-card card-verde">
+            <div class="summary-icon icon-verde"><i class="bi bi-cash-stack"></i></div>
+            <div class="summary-label">Faturamento Hoje</div>
+            <div class="summary-value" style="font-size:1.4rem;">124.800 Kz</div>
+            <div class="summary-delta delta-up"><i class="bi bi-arrow-up-short"></i>+8% vs ontem</div>
+          </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+          <div class="summary-card card-roxo">
+            <div class="summary-icon icon-roxo"><i class="bi bi-people"></i></div>
+            <div class="summary-label">Total Clientes</div>
+            <div class="summary-value">387</div>
+            <div class="summary-delta delta-up"><i class="bi bi-arrow-up-short"></i>+5 novos hoje</div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tabela de últimos pedidos -->
+      <!-- TODO PHP: SELECT p.*, c.nome FROM Pedido p JOIN Cliente c ON p.id_cliente=c.id_cliente ORDER BY data DESC LIMIT 10 -->
+      <div class="section-card mb-4">
+        <div class="section-head">
+          <div>
+            <div class="section-head-title">Últimos Pedidos</div>
+            <div class="section-head-sub">Tabela: Pedido + Cliente</div>
+          </div>
+          <button class="btn-sm-azul" onclick="mostrarSecao('pedidos', null)">Ver todos</button>
+        </div>
+        <div class="table-responsive">
+          <table class="table-km">
+            <thead>
+              <tr>
+                <th>ID Pedido</th>
+                <th>Cliente</th>
+                <th>Data</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Acção</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-pedidos-recentes">
+              <!-- Populada por JavaScript com mock data -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /sec-dashboard -->
+
+
+    <!-- ========================================================
+         SEÇÃO: GERIR PRODUTOS
+         TODO PHP: SELECT * FROM Produto ORDER BY nome
+         POST /admin/produtos/criar
+         PUT  /admin/produtos/{id}
+         DELETE /admin/produtos/{id}
+    ======================================================== -->
+    <div class="dashboard-section" id="sec-produtos">
+
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-head-title">Gerir Produtos / Cardápio</div>
+            <div class="section-head-sub">Tabela: Produto (id_produto, nome, descricao, preco)</div>
+          </div>
+          <button class="btn-sm-azul" onclick="abrirModalProduto()">
+            <i class="bi bi-plus-lg me-1"></i>Novo Produto
+          </button>
+        </div>
+        <div class="table-responsive">
+          <table class="table-km">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Preço (Kz)</th>
+                <th>Acções</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-produtos">
+              <!-- Populada por JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /sec-produtos -->
+
+
+    <!-- ========================================================
+         SEÇÃO: GERIR CLIENTES
+         TODO PHP: SELECT * FROM Cliente ORDER BY nome
+    ======================================================== -->
+    <div class="dashboard-section" id="sec-clientes">
+
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-head-title">Gerir Clientes</div>
+            <div class="section-head-sub">Tabela: Cliente (id_cliente, nome, telefone, email)</div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table-km">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>Email</th>
+                <th>Pedidos</th>
+                <th>Acção</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-clientes">
+              <!-- Populada por JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /sec-clientes -->
+
+
+    <!-- ========================================================
+         SEÇÃO: PEDIDOS
+         TODO PHP: SELECT p.*, c.nome, SUM(ip.quantidade*ip.preco_unitario) as total
+           FROM Pedido p
+           JOIN Cliente c ON p.id_cliente=c.id_cliente
+           JOIN ItemPedido ip ON ip.id_pedido=p.id_pedido
+           GROUP BY p.id_pedido
+    ======================================================== -->
+    <div class="dashboard-section" id="sec-pedidos">
+
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-head-title">Todos os Pedidos</div>
+            <div class="section-head-sub">Tabela: Pedido + Cliente + ItemPedido</div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table-km">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Cliente</th>
+                <th>Data</th>
+                <th>Itens</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Acção</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-todos-pedidos">
+              <!-- Populada por JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /sec-pedidos -->
+
+
+    <!-- ========================================================
+         SEÇÃO: PAGAMENTOS
+         TODO PHP: SELECT pg.*, p.id_pedido, c.nome
+           FROM Pagamento pg
+           JOIN Pedido p ON pg.id_pedido=p.id_pedido
+           JOIN Cliente c ON p.id_cliente=c.id_cliente
+    ======================================================== -->
+    <div class="dashboard-section" id="sec-pagamentos">
+
+      <div class="section-card">
+        <div class="section-head">
+          <div>
+            <div class="section-head-title">Pagamentos</div>
+            <div class="section-head-sub">Tabela: Pagamento (id_pagamento, id_pedido, metodo, valor, status)</div>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table-km">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Pedido #</th>
+                <th>Cliente</th>
+                <th>Método</th>
+                <th>Valor (Kz)</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tabela-pagamentos">
+              <!-- Populada por JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /sec-pagamentos -->
+
+
+    <!-- ========================================================
+         SEÇÃO: RELATÓRIOS
+         TODO PHP: queries agregadas por período
+    ======================================================== -->
+    <div class="dashboard-section" id="sec-relatorios">
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="summary-card card-azul">
+            <div class="summary-icon icon-azul"><i class="bi bi-calendar-month"></i></div>
+            <div class="summary-label">Receita do Mês</div>
+            <div class="summary-value" style="font-size:1.4rem;">2.840.500 Kz</div>
+            <div class="summary-delta delta-up">+18% vs mês anterior</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="summary-card card-verde">
+            <div class="summary-icon icon-verde"><i class="bi bi-trophy"></i></div>
+            <div class="summary-label">Produto Mais Vendido</div>
+            <div class="summary-value" style="font-size:1.1rem;">Muamba de Galinha</div>
+            <div class="summary-delta delta-up">243 unidades este mês</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="summary-card card-roxo">
+            <div class="summary-icon icon-roxo"><i class="bi bi-table"></i></div>
+            <div class="summary-label">Mesa Mais Activa</div>
+            <div class="summary-value">Mesa 7</div>
+            <div class="summary-delta delta-up">62 pedidos este mês</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-head">
+          <div class="section-head-title">Vendas por Produto — Este Mês</div>
+        </div>
+        <div class="table-responsive">
+          <table class="table-km">
+            <thead>
+              <tr><th>Produto</th><th>Qtd. Vendida</th><th>Receita (Kz)</th><th>% do Total</th></tr>
+            </thead>
+            <tbody id="tabela-relatorio"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div><!-- /sec-relatorios -->
+
+  </div><!-- /main-content -->
+</div><!-- /main-wrap -->
+
+
+<!-- Modal adicionar/editar produto -->
+<div class="modal fade" id="modalProduto" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:14px; border:none;">
+      <div class="modal-header" style="background:var(--azul); border:none; padding:18px 24px;">
+        <h5 class="modal-title" style="font-family:'DM Serif Display',serif; color:#fff; font-size:1.1rem;">Novo Produto</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:24px;">
+        <!-- TODO PHP: POST /admin/produtos/criar -->
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.84rem;font-weight:600;">Nome do Produto</label>
+          <input type="text" class="form-control" id="prod-nome" placeholder="Ex: Muamba de Galinha" />
+        </div>
+        <div class="mb-3">
+          <label class="form-label" style="font-size:.84rem;font-weight:600;">Descrição</label>
+          <textarea class="form-control" id="prod-desc" rows="2" placeholder="Descrição breve do prato"></textarea>
+        </div>
+        <div class="mb-4">
+          <label class="form-label" style="font-size:.84rem;font-weight:600;">Preço (Kz)</label>
+          <input type="number" class="form-control" id="prod-preco" placeholder="Ex: 2500" />
+        </div>
+        <button class="btn w-100" style="background:var(--azul-vivo);color:#fff;font-weight:600;border-radius:9px;padding:11px;"
+                onclick="salvarProduto()">
+          <i class="bi bi-check-circle me-2"></i>Salvar Produto
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+  /* ============================================================
+     MOCK DATA — Dados simulados
+     TODO PHP: cada array será substituído por fetch('/api/...')
+     ou por dados renderizados diretamente pelo template PHP
+  ============================================================ */
+
+  // Tabela: Pedido + Cliente (JOIN)
+  const mockPedidos = [
+    { id: '#1048', cliente: 'Ana Teixeira',   data: '2025-07-04', itens: 3, total: 8400,  status: 'pendente'  },
+    { id: '#1047', cliente: 'Carlos Mendes',  data: '2025-07-04', itens: 2, total: 5600,  status: 'preparo'   },
+    { id: '#1046', cliente: 'Maria Luísa',    data: '2025-07-04', itens: 4, total: 11200, status: 'concluido' },
+    { id: '#1045', cliente: 'Pedro Coelho',   data: '2025-07-03', itens: 1, total: 2800,  status: 'concluido' },
+    { id: '#1044', cliente: 'Sofia Neto',     data: '2025-07-03', itens: 5, total: 14500, status: 'cancelado' },
+    { id: '#1043', cliente: 'António Brito',  data: '2025-07-03', itens: 2, total: 5200,  status: 'concluido' },
+  ];
+
+  // Tabela: Produto
+  const mockProdutos = [
+    { id: 'P001', nome: 'Muamba de Galinha',   desc: 'Frango em óleo de palma com quiabo', preco: 2500 },
+    { id: 'P002', nome: 'Calulu de Peixe',     desc: 'Peixe seco com legumes tradicionais', preco: 3200 },
+    { id: 'P003', nome: 'Frango Grelhado',     desc: 'Frango no carvão com piri-piri',      preco: 2800 },
+    { id: 'P004', nome: 'Moamba de Ginguba',   desc: 'Carne em molho de amendoim',          preco: 3000 },
+    { id: 'P005', nome: 'Salada de Makemba',   desc: 'Banana frita com salada temperada',   preco: 950  },
+    { id: 'P006', nome: 'Sumo de Múcua',       desc: 'Bebida natural de baobab gelada',     preco: 700  },
+  ];
+
+  // Tabela: Cliente
+  const mockClientes = [
+    { id: 'C001', nome: 'Ana Teixeira',  tel: '+244 923 111 222', email: 'ana@email.ao',    pedidos: 12 },
+    { id: 'C002', nome: 'Carlos Mendes', tel: '+244 912 333 444', email: 'carlos@email.ao', pedidos: 8  },
+    { id: 'C003', nome: 'Maria Luísa',   tel: '+244 935 555 666', email: 'maria@email.ao',  pedidos: 21 },
+    { id: 'C004', nome: 'Pedro Coelho',  tel: '+244 944 777 888', email: 'pedro@email.ao',  pedidos: 5  },
+    { id: 'C005', nome: 'Sofia Neto',    tel: '+244 921 999 000', email: 'sofia@email.ao',  pedidos: 15 },
+  ];
+
+  // Tabela: Pagamento (id_pagamento, id_pedido, metodo, valor, status)
+  const mockPagamentos = [
+    { id: 'PAG001', pedido: '#1048', cliente: 'Ana Teixeira',  metodo: 'Multicaixa',  valor: 8400,  status: 'pago'       },
+    { id: 'PAG002', pedido: '#1047', cliente: 'Carlos Mendes', metodo: 'Dinheiro',    valor: 5600,  status: 'aguardando' },
+    { id: 'PAG003', pedido: '#1046', cliente: 'Maria Luísa',   metodo: 'TPA',         valor: 11200, status: 'pago'       },
+    { id: 'PAG004', pedido: '#1045', cliente: 'Pedro Coelho',  metodo: 'Multicaixa',  valor: 2800,  status: 'pago'       },
+    { id: 'PAG005', pedido: '#1044', cliente: 'Sofia Neto',    metodo: 'Dinheiro',    valor: 14500, status: 'aguardando' },
+  ];
+
+  // Relatório de vendas por produto
+  const mockRelatorio = [
+    { nome: 'Muamba de Galinha',  qtd: 243, receita: 607500 },
+    { nome: 'Frango Grelhado',    qtd: 189, receita: 529200 },
+    { nome: 'Calulu de Peixe',    qtd: 154, receita: 492800 },
+    { nome: 'Moamba de Ginguba',  qtd: 132, receita: 396000 },
+    { nome: 'Salada de Makemba',  qtd: 98,  receita: 93100  },
+    { nome: 'Sumo de Múcua',      qtd: 310, receita: 217000 },
+  ];
+
+
+  /* ============================================================
+     RENDERIZAÇÃO DAS TABELAS
+  ============================================================ */
+
+  function badgeStatus(s) {
+    const map = {
+      pendente: 's-pendente', preparo: 's-preparo',
+      concluido: 's-concluido', cancelado: 's-cancelado',
+      pago: 's-pago', aguardando: 's-aguardando'
+    };
+    const labels = {
+      pendente: 'Pendente', preparo: 'Em Preparo',
+      concluido: 'Concluído', cancelado: 'Cancelado',
+      pago: 'Pago', aguardando: 'Aguardando'
+    };
+    return `<span class="badge-status ${map[s]}">${labels[s]}</span>`;
+  }
+
+  // Renderiza tabela de pedidos recentes
+  function renderPedidosRecentes() {
+    const tbody = document.getElementById('tabela-pedidos-recentes');
+    tbody.innerHTML = mockPedidos.map(p => `
+      <tr>
+        <td><strong>${p.id}</strong></td>
+        <td>${p.cliente}</td>
+        <td>${p.data}</td>
+        <td>${p.total.toLocaleString('pt-AO')} Kz</td>
+        <td>${badgeStatus(p.status)}</td>
+        <td><button class="btn-tbl btn-ver" onclick="alert('Detalhes pedido ${p.id}')">Visualizar</button></td>
+      </tr>`).join('');
+  }
+
+  // Renderiza tabela de produtos
+  function renderProdutos() {
+    const tbody = document.getElementById('tabela-produtos');
+    tbody.innerHTML = mockProdutos.map(p => `
+      <tr>
+        <td><code>${p.id}</code></td>
+        <td><strong>${p.nome}</strong></td>
+        <td style="color:var(--muted);max-width:200px;">${p.desc}</td>
+        <td><strong>${p.preco.toLocaleString('pt-AO')} Kz</strong></td>
+        <td>
+          <button class="btn-tbl btn-editar me-1" onclick="alert('Editar: ${p.nome}')">Editar</button>
+          <button class="btn-tbl btn-excluir" onclick="excluirProduto('${p.id}')">Excluir</button>
+        </td>
+      </tr>`).join('');
+  }
+
+  // Renderiza tabela de clientes
+  function renderClientes() {
+    const tbody = document.getElementById('tabela-clientes');
+    tbody.innerHTML = mockClientes.map(c => `
+      <tr>
+        <td><code>${c.id}</code></td>
+        <td><strong>${c.nome}</strong></td>
+        <td>${c.tel}</td>
+        <td>${c.email}</td>
+        <td><span class="badge-status s-pago">${c.pedidos} pedidos</span></td>
+        <td><button class="btn-tbl btn-ver" onclick="alert('Ver cliente ${c.nome}')">Ver</button></td>
+      </tr>`).join('');
+  }
+
+  // Renderiza todos os pedidos
+  function renderTodosPedidos() {
+    const tbody = document.getElementById('tabela-todos-pedidos');
+    tbody.innerHTML = mockPedidos.map(p => `
+      <tr>
+        <td><strong>${p.id}</strong></td>
+        <td>${p.cliente}</td>
+        <td>${p.data}</td>
+        <td>${p.itens} iten(s)</td>
+        <td><strong>${p.total.toLocaleString('pt-AO')} Kz</strong></td>
+        <td>${badgeStatus(p.status)}</td>
+        <td><button class="btn-tbl btn-ver" onclick="alert('Pedido ${p.id}')">Ver</button></td>
+      </tr>`).join('');
+  }
+
+  // Renderiza pagamentos
+  function renderPagamentos() {
+    const tbody = document.getElementById('tabela-pagamentos');
+    tbody.innerHTML = mockPagamentos.map(pg => `
+      <tr>
+        <td><code>${pg.id}</code></td>
+        <td><strong>${pg.pedido}</strong></td>
+        <td>${pg.cliente}</td>
+        <td>${pg.metodo}</td>
+        <td><strong>${pg.valor.toLocaleString('pt-AO')} Kz</strong></td>
+        <td>${badgeStatus(pg.status)}</td>
+      </tr>`).join('');
+  }
+
+  // Renderiza relatório
+  function renderRelatorio() {
+    const total = mockRelatorio.reduce((s, r) => s + r.receita, 0);
+    const tbody = document.getElementById('tabela-relatorio');
+    tbody.innerHTML = mockRelatorio.map(r => `
+      <tr>
+        <td><strong>${r.nome}</strong></td>
+        <td>${r.qtd}</td>
+        <td>${r.receita.toLocaleString('pt-AO')} Kz</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;height:6px;background:var(--azul-claro);border-radius:3px;">
+              <div style="width:${Math.round(r.receita/total*100)}%;height:100%;background:var(--azul-vivo);border-radius:3px;"></div>
+            </div>
+            <span style="font-size:.78rem;color:var(--muted);">${Math.round(r.receita/total*100)}%</span>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  // Data de hoje no topbar
+  document.getElementById('data-hoje').textContent =
+    new Date().toLocaleDateString('pt-AO', { weekday:'short', day:'2-digit', month:'short', year:'numeric' });
+
+
+  /* ============================================================
+     NAVEGAÇÃO ENTRE SEÇÕES
+  ============================================================ */
+  const titulos = {
+    dashboard: 'Dashboard Geral',
+    produtos:  'Gerir Produtos',
+    clientes:  'Gerir Clientes',
+    pedidos:   'Todos os Pedidos',
+    pagamentos:'Pagamentos',
+    relatorios:'Relatórios'
+  };
+
+  function mostrarSecao(nome, el) {
+    // Oculta todas as seções
+    document.querySelectorAll('.dashboard-section').forEach(s => s.classList.remove('ativa'));
+    // Mostra a selecionada
+    document.getElementById('sec-' + nome).classList.add('ativa');
+    // Atualiza topbar
+    document.getElementById('topbar-title').textContent = titulos[nome] || nome;
+    // Atualiza nav ativo
+    if (el) {
+      document.querySelectorAll('.nav-item-sidebar').forEach(n => n.classList.remove('ativo'));
+      el.classList.add('ativo');
+    }
+    // Fecha sidebar mobile
+    if (window.innerWidth < 992) document.getElementById('sidebar').classList.remove('aberta');
+  }
+
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('aberta');
+  }
+
+
+  /* ============================================================
+     AÇÕES SIMULADAS (Futuro: chamadas POST/DELETE ao backend)
+  ============================================================ */
+
+  function abrirModalProduto() {
+    new bootstrap.Modal(document.getElementById('modalProduto')).show();
+  }
+
+  function salvarProduto() {
+    // TODO PHP: POST /admin/produtos/criar com os dados do form
+    const nome  = document.getElementById('prod-nome').value;
+    const desc  = document.getElementById('prod-desc').value;
+    const preco = parseInt(document.getElementById('prod-preco').value) || 0;
+
+    if (!nome || !preco) { alert('Preencha nome e preço.'); return; }
+
+    const novoId = 'P00' + (mockProdutos.length + 1);
+    mockProdutos.push({ id: novoId, nome, desc, preco });
+    renderProdutos();
+
+    bootstrap.Modal.getInstance(document.getElementById('modalProduto')).hide();
+    document.getElementById('prod-nome').value  = '';
+    document.getElementById('prod-desc').value  = '';
+    document.getElementById('prod-preco').value = '';
+    alert('Produto "' + nome + '" adicionado com sucesso!');
+  }
+
+  function excluirProduto(id) {
+    // TODO PHP: DELETE /admin/produtos/{id}
+    if (!confirm('Confirma exclusão do produto ' + id + '?')) return;
+    const idx = mockProdutos.findIndex(p => p.id === id);
+    if (idx !== -1) { mockProdutos.splice(idx, 1); renderProdutos(); }
+  }
+
+
+  /* ============================================================
+     INICIALIZAÇÃO — Renderiza todas as tabelas ao carregar
+  ============================================================ */
+  renderPedidosRecentes();
+  renderProdutos();
+  renderClientes();
+  renderTodosPedidos();
+  renderPagamentos();
+  renderRelatorio();
+
+</script>
+</body>
+</html>
